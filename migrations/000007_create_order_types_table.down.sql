@@ -1,0 +1,1 @@
+DROP Table "order_types";

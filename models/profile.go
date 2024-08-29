@@ -1,11 +1,20 @@
 package models
 
-import "RGT/konis/dtos"
+type Profile struct {
+	Id          int     `json:"id"`
+	FullName    string  `json:"fullName" db:"full_name"`
+	PhoneNumber *string `json:"phoneNumber" db:"phone_number"`
+	Address     *string `json:"address"`
+	Image       *string `json:"image"`
+	UserId      int     `json:"userId" db:"user_id"`
+}
 
-type JoinProfile struct {
-	Id       int    `json:"id"`
-	Email    string `json:"email" form:"email" binding:"required,email"`
-	Password string `json:"-" form:"password" binding:"required"`
-	RoleId   int    `json:"roleId" db:"role_id"`
-	Profile  dtos.Profile
+type ProfileJoinUser struct {
+	Id          int     `json:"id"`
+	FullName    string  `json:"fullName" db:"full_name"`
+	Email       string  `json:"email" `
+	PhoneNumber *string `json:"phoneNumber" db:"phone_number"`
+	Address     *string `json:"address"`
+	Image       *string `json:"image"`
+	RoleId      int     `json:"roleId" db:"role_id"`
 }

@@ -1,78 +1,59 @@
 package repository
 
 import (
-	"RGT/konis/dtos"
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
 )
 
-func CreateProfile(data models.JoinProfile, roleId int) dtos.Profile {
+func FindProfileById(id int) (models.ProfileJoinUser, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	var profile dtos.Profile
+	sql := `
+		SELECT p.id, p.full_name, u.email, p.phone_number,
+		p.address, p.image, u.role_id 
+		FROM profile p 
+		JOIN users u ON u.id = p.user_id
+		WHERE p.id = $1
+		`
 
-	// data.Password = lib.Encrypt(data.Password)
+	row, err := db.Query(context.Background(), sql, id)
 
-	sqlRegist := `insert into "users" 
-	("email", "password", "role_id") 
-	values 
-	($1, $2, $3) returning "id", "email", "role_id"`
+	if err != nil {
+		return models.ProfileJoinUser{}, err
+	}
 
-	// var userId int
-	row1 := db.QueryRow(context.Background(), sqlRegist, data.Email, data.Password, roleId)
-	row1.Scan(
-		&data.Id,
-		&data.Email,
-		&data.RoleId,
-	)
-	// fmt.Println(err1)
-	// if err1 != nil {
-	// 	fmt.Println(err1)
-	// 	fmt.Println("err1")
-	// }
+	data, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.ProfileJoinUser])
 
-	sqlProfile := `insert into "profile" 
-	("full_name","phone_number", "address", "image", "user_id") 
-	values 
-	($1, $2, $3, $4, $5) returning "id", "full_name", "phone_number", "address", "image", "user_id"`
+	if err != nil {
+		return models.ProfileJoinUser{}, err
+	}
 
-	row2 := db.QueryRow(context.Background(), sqlProfile, data.Profile.FullName, data.Profile.PhoneNumber, data.Profile.Address, data.Profile.Image, data.Profile.UserId)
-	row2.Scan(
-		&profile.Id,
-		&profile.FullName,
-		&profile.PhoneNumber,
-		&profile.Address,
-		&profile.Image,
-		&profile.UserId,
-	)
-
-	// if err2 != nil {
-	// 	fmt.Println(err2)
-	// }
-	return profile
+	return data, nil
 }
 
-func FindAllProfiles() []dtos.Profile {
+func CreateProfile(data models.Profile) (models.Profile, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `select * from "profile"`
-
-	rows, err := db.Query(context.Background(), sql)
+	sql := `
+		INSERT INTO profile (full_name, user_id)
+		VALUES ($1, $2) RETURNING *
+		`
+	row, err := db.Query(context.Background(), sql, data.FullName, data.UserId)
 
 	if err != nil {
-		fmt.Println(err)
+		return models.Profile{}, nil
 	}
 
-	profiles, err := pgx.CollectRows(rows, pgx.RowToStructByPos[dtos.Profile])
+	profile, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Profile])
+
 	if err != nil {
-		fmt.Println(err)
+		return models.Profile{}, nil
 	}
 
-	return profiles
+	return profile, err
 }

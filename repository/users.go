@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"RGT/konis/dtos"
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"context"
@@ -30,7 +29,6 @@ func FindAllUsers() ([]models.Users, error) {
 
 	return users, nil
 }
-
 
 func FindUserById(id int) (models.Users, error) {
 	db := lib.DB()
@@ -127,8 +125,8 @@ func UpdateUserById(data models.Users, id int) (models.Users, error) {
 func DeleteUserById(id int) (models.Users, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
-	
-	userDelete, err:= FindUserById(id)
+
+	userDelete, err := FindUserById(id)
 	if err != nil {
 		return models.Users{}, err
 	}

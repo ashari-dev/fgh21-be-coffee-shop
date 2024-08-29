@@ -5,10 +5,10 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
-
 
 func AuthLogin(c *gin.Context) {
 	formLogin := dtos.LoginForm{}
@@ -41,23 +41,32 @@ func AuthLogin(c *gin.Context) {
 }
 
 func AuthRegister(c *gin.Context) {
-form := models.JoinProfile{}
-	user := dtos.User{}
-
-	err := ctx.Bind(&form)
+	formRegister := dtos.RegisterForm{}
+	err := c.Bind(&formRegister)
+	fmt.Println(formRegister)
 	if err != nil {
-		lib.HandlerBadReq(ctx, "Register Failed")
+		lib.HandlerBadReq(c, "format invalid")
 		return
 	}
 
-	roleId := 1
+	user, err := repository.CreateUser(models.Users{
+		Email:    formRegister.Email,
+		Password: formRegister.Password,
+		RoleId:   1,
+	})
+	if err != nil {
+		lib.HandlerBadReq(c, "data not verified")
+		return
+	}
 
-	repository.CreateProfile(form, roleId)
+	profile, err := repository.CreateProfile(models.Profile{
+		FullName: formRegister.FullName,
+		UserId:   user.Id,
+	})
+	if err != nil {
+		lib.HandlerBadReq(c, "data not verified")
+		return
+	}
 
-	user.Email = form.Email
-	user.Password = form.Password
-	createUser := repository.CreateUser(user, roleId)
-
-	lib.HandlerOK(ctx, "Register success", createUser, lib.PageInfo{})
-
+	lib.HandlerOK(c, "Register success", profile, nil)
 }

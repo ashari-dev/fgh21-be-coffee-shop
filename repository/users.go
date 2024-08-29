@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"RGT/konis/dtos"
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"context"
@@ -29,6 +30,7 @@ func FindAllUsers() ([]models.Users, error) {
 
 	return users, nil
 }
+
 
 func FindUserById(id int) (models.Users, error) {
 	db := lib.DB()

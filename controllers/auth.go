@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
 func AuthLogin(c *gin.Context) {
 	formLogin := dtos.LoginForm{}
 	err := c.Bind(&formLogin)
@@ -39,6 +40,24 @@ func AuthLogin(c *gin.Context) {
 	}
 }
 
-func RegisterLogin(c *gin.Context) {
+func AuthRegister(c *gin.Context) {
+form := models.JoinProfile{}
+	user := dtos.User{}
+
+	err := ctx.Bind(&form)
+	if err != nil {
+		lib.HandlerBadReq(ctx, "Register Failed")
+		return
+	}
+
+	roleId := 1
+
+	repository.CreateProfile(form, roleId)
+
+	user.Email = form.Email
+	user.Password = form.Password
+	createUser := repository.CreateUser(user, roleId)
+
+	lib.HandlerOK(ctx, "Register success", createUser, lib.PageInfo{})
 
 }

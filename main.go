@@ -15,6 +15,7 @@ func main() {
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	r.Use(cors.New(config))
 
-	r.Run("0.0.0.0:8888")
+	routers.RouterCombain(r)
+	r.Run("0.0.0.0:8000")
 
 }

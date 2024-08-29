@@ -5,31 +5,50 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AuthRegister(ctx *gin.Context) {
-	form := models.JoinProfile{}
+
+func AuthLogin(c *gin.Context) {
+	formLogin := dtos.LoginForm{}
+	err := c.Bind(&formLogin)
+
+	if err != nil {
+		lib.HandlerBadReq(c, "email and password is null")
+		return
+	}
+
+	found, err := repository.FindUserByEmail(formLogin.Email)
+	if err != nil {
+		lib.HandlerBadReq(c, "Wrong email and password")
+		return
+	}
+	if found == (models.Users{}) {
+		lib.HandlerUnauthorized(c, "Wrong email")
+		return
+	}
+
+	isVerified := lib.Verify(formLogin.Password, found.Password)
+
+	if !isVerified {
+		lib.HandlerUnauthorized(c, "Wrong password")
+		return
+	} else {
+		token := lib.GenerateUserTokenById(found.Id)
+		lib.HandlerOK(c, "Login success", dtos.Token{Token: token}, nil)
+	}
+}
+
+func AuthRegister(c *gin.Context) {
+form := models.JoinProfile{}
 	user := dtos.User{}
 
 	err := ctx.Bind(&form)
-	fmt.Println(form)
 	if err != nil {
 		lib.HandlerBadReq(ctx, "Register Failed")
 		return
 	}
-
-	// dataUser := models.FindOneUserByEmail(form.Email)
-
-	// if dataUser.Email == form.Email {
-	// 	ctx.JSON(http.StatusBadRequest, lib.Response{
-	// 		Success: false,
-	// 		Message: "Email already exist",
-	// 	})
-	// 	return
-	// }
 
 	roleId := 1
 
@@ -40,4 +59,5 @@ func AuthRegister(ctx *gin.Context) {
 	createUser := repository.CreateUser(user, roleId)
 
 	lib.HandlerOK(ctx, "Register success", createUser, lib.PageInfo{})
+
 }

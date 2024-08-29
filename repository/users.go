@@ -51,6 +51,27 @@ func FindUserById(id int) (models.Users, error) {
 	return user, nil
 }
 
+func FindUserByEmail(email string) (models.Users, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `SELECT * FROM users WHERE email=$1`
+
+	row, err := db.Query(context.Background(), sql, email)
+
+	if err != nil {
+		return models.Users{}, err
+	}
+
+	user, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Users])
+
+	if err != nil {
+		return models.Users{}, err
+	}
+
+	return user, nil
+}
+
 func CreateUser(data models.Users) (models.Users, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())

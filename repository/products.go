@@ -16,7 +16,7 @@ func GetAllProducts(data models.Products) ([]models.Products, error) {
 	sql := `SELECT * FROM products`
 
 	rows, err := db.Query(context.Background(), sql)
-	
+
 	if err != nil {
 		return []models.Products{}, err
 	}
@@ -26,7 +26,7 @@ func GetAllProducts(data models.Products) ([]models.Products, error) {
 	if err != nil {
 		return []models.Products{}, err
 	}
-	
+
 	return products, err
 }
 func AddNewProduct(data models.Products) (models.Products, error) {
@@ -48,26 +48,9 @@ func AddNewProduct(data models.Products) (models.Products, error) {
 		return models.Products{}, err
 	}
 
-	// query := db.QueryRow(context.Background(), sql, data.Title, data.Description, data.Price)
-
-	// var row models.Products
-	
-	// err := query.Scan(
-	// 	&row.Id,
-	// 	&row.Title,
-	// 	&row.Description,
-	// 	&row.Price,
-	// 	&row.UserId,
-	// )
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return models.Products{}, err
-	// }
-
 	return row, err
 }
-func GetProductById (id int) (models.Products, error) {
+func GetProductById(id int) (models.Products, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
@@ -110,17 +93,17 @@ func ChangeDataProduct(data models.Products, id int) (models.Products, error) {
 
 	return result, err
 }
-func RemoveTheProduct (data models.Products, id int) error {
+func RemoveTheProduct(data models.Products, id int) error {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
 	sql := `DELETE FROM products WHERE id=$1;`
 
-	query, err := db.Exec(context.Background(), sql, id)
+	query, _ := db.Exec(context.Background(), sql, id)
 
-	if err != nil {
-		return fmt.Errorf("Failed to delete product")
-	}
+	// if err != nil {
+	// 	// return fmt.Errorf("Failed to delete product")
+	// }
 	if query.RowsAffected() == 0 {
 		return fmt.Errorf("data not found")
 	}

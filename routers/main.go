@@ -2,7 +2,6 @@ package routers
 
 import "github.com/gin-gonic/gin"
 
-
 func RouterCombain(r *gin.Engine) {
 
 	RolesRouters(r.Group("/roles"))
@@ -10,6 +9,6 @@ func RouterCombain(r *gin.Engine) {
 	CategoriesRouters(r.Group("categories"))
 	ProductsRouters(r.Group("/products"))
 	AuthRouters(r.Group("/auth"))
-  ProfileRouters(r.Group("/profile"))
+	ProfileRouters(r.Group("/profile"))
 
 }

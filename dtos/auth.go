@@ -7,9 +7,9 @@ type LoginForm struct {
 
 type RegisterForm struct {
 	FullName        string `form:"fullName"`
-	Email           string `form:"email" binding:"required,email"`
+	Email           string `form:"email" binding:"email"`
 	Password        string `form:"password" binding:"min=6"`
-	ConfirmPassword string `form:"confirmPassword" binding:"eqfield=Password"`
+	ConfirmPassword string `form:"cPassword" binding:"eqfield=Password"`
 }
 
 type Token struct {

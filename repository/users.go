@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"RGT/konis/dtos"
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"context"
@@ -30,6 +31,7 @@ func FindAllUsers() ([]models.Users, error) {
 	return users, nil
 }
 
+
 func FindUserById(id int) (models.Users, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
@@ -37,6 +39,27 @@ func FindUserById(id int) (models.Users, error) {
 	sql := `SELECT * FROM users WHERE id=$1`
 
 	row, err := db.Query(context.Background(), sql, id)
+
+	if err != nil {
+		return models.Users{}, err
+	}
+
+	user, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Users])
+
+	if err != nil {
+		return models.Users{}, err
+	}
+
+	return user, nil
+}
+
+func FindUserByEmail(email string) (models.Users, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `SELECT * FROM users WHERE email=$1`
+
+	row, err := db.Query(context.Background(), sql, email)
 
 	if err != nil {
 		return models.Users{}, err

@@ -3,5 +3,6 @@ CREATE TABLE "testimonials" (
     "name" VARCHAR(50),
     "profession" VARCHAR(50),
     "comment" TEXT,
-    "rating" INT
+    "rating" INT,
+    "image" VARCHAR(255)
 )

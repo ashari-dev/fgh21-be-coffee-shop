@@ -2,18 +2,33 @@ package controllers
 
 import (
 	"RGT/konis/lib"
-	"RGT/konis/models"
-	"net/http"
+	"RGT/konis/repository"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllRoles(r *gin.Context) {
-	results := models.FindAllRoles()
+func GetAllRoles(c *gin.Context) {
+	results := repository.FindAllRoles()
 	println(results)
-	r.JSON(http.StatusOK, lib.Respont{
-		Success: true,
-		Message: "List All Roles",
-		Result: results,
-	})
+	lib.HandlerOK(c, "List All Roles", results, nil)
+
+}
+
+func GetOneRoles(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		lib.HandlerBadReq(c, "Inavlid id")
+		return
+	}
+
+	results := repository.FindOneRoles(id)
+	if results.Id == 0 {
+		lib.HandlerNotfound(c, "id is not found")
+		return
+	}
+
+	lib.HandlerOK(c, "List All Roles", results, nil)
+
 }

@@ -2,18 +2,13 @@ package controllers
 
 import (
 	"RGT/konis/lib"
-	"RGT/konis/models"
-	"net/http"
+	"RGT/konis/repository"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetALLCategories(r *gin.Context) {
-	results := models.FindAllCategories()
-	println(results)
-	r.JSON(http.StatusOK, lib.Respont{
-		Success: true,
-		Message: "List All Roles",
-		Result:  results,
-	})
+func GetALLCategories(c *gin.Context) {
+	products := repository.FindAllCategories()
+
+	lib.HandlerOK(c, "List All Category", products, nil)
 }

@@ -127,3 +127,24 @@ func GetProductsById(c *gin.Context) {
 	}
 	lib.HandlerOK(c, "Get Product Sizes by Product Id", data, nil)
 }
+
+func ListAllCategoryProduct(c *gin.Context) {
+	categoryproducts, err := repository.GetAllcategoryproduct(models.CategoryProduct{})
+	if err != nil {
+		lib.HandlerNotfound(c, "Category product not found")
+		return
+	}
+
+	lib.HandlerOK(c, "List All Category Product", categoryproducts, nil)
+}
+
+func GetCategoryProductByCategoryId(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	category, err := repository.FindCategoryProductByCategoryId(id)
+
+	if err != nil {
+		lib.HandlerNotfound(c, "Data not found")
+	}
+
+	lib.HandlerOK(c, "Detail Category Product", category, nil)
+}

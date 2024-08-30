@@ -132,7 +132,7 @@ func GetAllProductsSize(data models.ProductsSizes) ([]models.ProductsSizes, erro
 	return productsSizes, err
 }
 
-func FindProductSizeByProductId(product_id int) (models.ProductsSizes, error) {
+func FindProductSizeByProductId(product_id int) ([]models.ProductsSizes, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
@@ -141,13 +141,13 @@ func FindProductSizeByProductId(product_id int) (models.ProductsSizes, error) {
 	row, err := db.Query(context.Background(), sql, product_id)
 
 	if err != nil {
-		return models.ProductsSizes{}, err
+		return []models.ProductsSizes{}, err
 	}
 
-	product_sizes, err := pgx.CollectOneRow(row, pgx.RowToStructByName[models.ProductsSizes])
+	product_sizes, err := pgx.CollectRows(row, pgx.RowToStructByPos[models.ProductsSizes])
 
 	if err != nil {
-		return models.ProductsSizes{}, err
+		return []models.ProductsSizes{}, err
 	}
 
 	return product_sizes, nil

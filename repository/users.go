@@ -114,7 +114,7 @@ func UpdateUserById(data models.Users, id int) (models.Users, error) {
 	}
 
 	user, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Users])
-	fmt.Println(user)
+	// fmt.Println(user)
 	if err != nil {
 		return models.Users{}, nil
 	}

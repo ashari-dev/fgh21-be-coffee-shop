@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"RGT/konis/dtos"
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"context"
@@ -8,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func FindProfileById(id int) (models.ProfileJoinUser, error) {
+func FindProfileById(id int) (dtos.ProfileJoinUser, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
@@ -23,13 +24,13 @@ func FindProfileById(id int) (models.ProfileJoinUser, error) {
 	row, err := db.Query(context.Background(), sql, id)
 
 	if err != nil {
-		return models.ProfileJoinUser{}, err
+		return dtos.ProfileJoinUser{}, err
 	}
 
-	data, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.ProfileJoinUser])
+	data, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[dtos.ProfileJoinUser])
 
 	if err != nil {
-		return models.ProfileJoinUser{}, err
+		return dtos.ProfileJoinUser{}, err
 	}
 
 	return data, nil
@@ -56,4 +57,29 @@ func CreateProfile(data models.Profile) (models.Profile, error) {
 	}
 
 	return profile, err
+}
+
+func UpdateProfile(data models.Profile, id int) (dtos.ProfileJoinUser, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `UPDATE profile SET ("full_name", "phone_number", "address") = ($1, $2, $3) WHERE id=$4 returning "id", "full_name", "phone_number", "address"`
+
+	query := db.QueryRow(context.Background(), sql, data.FullName, data.PhoneNumber, data.Address, id)
+
+	var result dtos.ProfileJoinUser
+
+	err := query.Scan(
+		&result.Id,
+		&result.FullName,
+		&result.PhoneNumber,
+		&result.Address,
+		// &result.Image,
+	)
+
+	if err != nil {
+		return dtos.ProfileJoinUser{}, err
+	}
+
+	return result, err
 }

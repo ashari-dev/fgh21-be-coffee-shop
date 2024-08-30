@@ -7,7 +7,7 @@ import (
 )
 
 func ProfileRouters(rg *gin.RouterGroup) {
-	rg.GET("", controllers.ListAllProfiles)
 	rg.PATCH("/:id", controllers.UpdateProfile)
 	rg.GET("/:id", controllers.FindProfileById)
+	rg.DELETE("/:id", controllers.DeleteProfile)
 }

@@ -13,4 +13,5 @@ func RouterCombain(r *gin.Engine) {
 	PromoRouters(r.Group("/promo"))
 	TestimonialsRouters(r.Group("/testimonials"))
 	OrderTypesRouters(r.Group("/order-type"))
+	TransactionStatusRouters(r.Group("/transaction-status"))
 }

@@ -50,6 +50,7 @@ func ListProductById(c *gin.Context) {
 
 	if err != nil {
 		lib.HandlerNotfound(c, "Data not found")
+		return
 	}
 
 	if selectedProduct.Id == 0 {

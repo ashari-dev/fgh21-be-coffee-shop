@@ -8,4 +8,6 @@ import (
 
 func RolesRouters(rg *gin.RouterGroup) {
 	rg.GET("", controllers.GetAllRoles)
+	rg.GET("/:id", controllers.GetOneRoles)
+
 }

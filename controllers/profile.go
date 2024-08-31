@@ -11,11 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ListAllProfiles(ctx *gin.Context) {
-	// profiles := repository.FindAllProfiles()
-	// lib.HandlerOK(ctx, "List all profiles", profiles, lib.PageInfo{})
-}
-
 func FindProfileById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -59,4 +54,18 @@ func UpdateProfile(c *gin.Context) {
 	}
 
 	lib.HandlerOK(c, "Success Edit Product", updateProfile, nil)
+}
+
+func DeleteProfile(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	repository.RemoveProfile(id)
+	selectUser, err := repository.DeleteUserById(id)
+
+	if err != nil {
+		lib.HandlerNotfound(c, "Data not found")
+		return
+	}
+
+	lib.HandlerOK(c, "Delete the product", selectUser, nil)
 }

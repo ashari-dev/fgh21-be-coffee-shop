@@ -1,13 +1,13 @@
 package controllers
 
 import (
-
 	"RGT/konis/dtos"
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
 	"fmt"
 	"math/rand"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )

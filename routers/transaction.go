@@ -10,12 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TransactionRouters(rg *gin.RouterGroup) {
-	rg.GET("/:id", controllers.GetTransactionDetailById)
-}
-
 
 func TransactionRouters(rg *gin.RouterGroup) {
 	rg.POST("",middlewares.AuthMiddleware(), controllers.CreateTransaction)
+	rg.GET("/:id", controllers.GetTransactionDetailById)
 }
 

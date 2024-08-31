@@ -5,11 +5,13 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5"
 )
 
-func FindProfileById(id int) (dtos.ProfileJoinUser, error) {
+func FindProfileById(id int) (dtos.ProfileUser, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
@@ -18,19 +20,21 @@ func FindProfileById(id int) (dtos.ProfileJoinUser, error) {
 		p.address, p.image, u.role_id 
 		FROM profile p 
 		JOIN users u ON u.id = p.user_id
-		WHERE p.id = $1
+		WHERE p.user_id = $1
 		`
 
-	row, err := db.Query(context.Background(), sql, id)
+	row, err := db.Query(context.Background(), sql,id)
 
 	if err != nil {
-		return dtos.ProfileJoinUser{}, err
+		return dtos.ProfileUser{}, err
 	}
 
-	data, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[dtos.ProfileJoinUser])
+	data, err := pgx.CollectOneRow(row, pgx.RowToStructByName[dtos.ProfileUser])
 
 	if err != nil {
-		return dtos.ProfileJoinUser{}, err
+		log.Println(err)
+		fmt.Println(err)
+		return dtos.ProfileUser{}, err
 	}
 
 	return data, nil

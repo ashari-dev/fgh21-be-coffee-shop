@@ -11,11 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// func ListAllProfiles(ctx *gin.Context) {
-// 	profiles := repository.FindAllProfiles()
-// 	lib.HandlerOK(ctx, "List all profiles", profiles, lib.PageInfo{})
-// }
-
 func FindProfileById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 

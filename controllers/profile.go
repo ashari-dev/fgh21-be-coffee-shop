@@ -25,10 +25,10 @@ func FindProfileById(c *gin.Context) {
 }
 
 func UpdateProfile(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
-	// id := c.GetInt("userId")
+	// id, _ := strconv.Atoi(c.Param("id"))
+	id := c.GetInt("UserId")
 	form := dtos.ProfileJoinUser{}
-	fmt.Println(form)
+	// fmt.Println(form)
 
 	err := c.Bind(&form)
 
@@ -41,7 +41,7 @@ func UpdateProfile(c *gin.Context) {
 		Email:    form.Email,
 		Password: *form.Password,
 	}, id)
-
+	
 	updateProfile, err := repository.UpdateProfile(models.Profile{
 		FullName:    form.FullName,
 		PhoneNumber: &form.PhoneNumber,

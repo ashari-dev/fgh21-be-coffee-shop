@@ -8,7 +8,7 @@ import (
 )
 
 func ProfileRouters(rg *gin.RouterGroup) {
-	rg.PATCH("/:id", controllers.UpdateProfile)
 	rg.GET("/",middlewares.AuthMiddleware(), controllers.FindProfileById)
+	rg.PATCH("/", middlewares.AuthMiddleware(), controllers.UpdateProfile)
 	rg.DELETE("/:id", controllers.DeleteProfile)
 }

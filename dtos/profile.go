@@ -19,3 +19,6 @@ type ProfileJoinUser struct {
 	Image       *string `json:"image"`
 	RoleId      *int    `json:"roleId" db:"role_id"`
 }
+type UploadImageProfile struct{
+	Image string `json:"image" form:"profileImg"`
+}

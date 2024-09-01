@@ -5,6 +5,7 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -12,6 +13,25 @@ import (
 )
 
 func ListAllProducts(c *gin.Context) {
+	// page, _ := strconv.Atoi(c.Query("page"))
+	// limit, _ := strconv.Atoi(c.Query("limit"))
+	// if page < 1 {
+	// 	page = 1
+	// }
+	// if limit < 1 {
+	// 	limit = 3
+	// }
+	products, err := repository.GetAllProducts()
+	fmt.Println(err)
+	if err != nil {
+		lib.HandlerNotfound(c, "Products not found")
+		return
+	}
+	log.Println(products)
+
+	lib.HandlerOK(c, "List All Products", products, nil)
+}
+func ListProductsWithPagination(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
 	if page < 1 {
@@ -20,7 +40,8 @@ func ListAllProducts(c *gin.Context) {
 	if limit < 1 {
 		limit = 3
 	}
-	products, err := repository.GetAllProducts(page, limit)
+	products, err := repository.GetAllProductsWithPagination(page, limit)
+	fmt.Println(err)
 	if err != nil {
 		lib.HandlerNotfound(c, "Products not found")
 		return

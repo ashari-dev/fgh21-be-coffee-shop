@@ -9,10 +9,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func GetAllProducts(page int, limit int) ([]models.JoinProducts, error) {
+func GetAllProducts() ([]models.JoinProducts, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
-	var offset int = (page - 1) * limit
+	// var offset int = (page - 1) * limit
 
 	sql := `SELECT p.id, pi.image, p.title, p.price, p.description, array_agg(ps.id) as "product_sizes", array_agg(pt.order_type_id) as "order_type", pv.stock
 	FROM products p
@@ -26,7 +26,7 @@ func GetAllProducts(page int, limit int) ([]models.JoinProducts, error) {
 
 	// sql := `SELECT * FROM products limit $1 offset $2`
 
-	rows, err := db.Query(context.Background(), sql, limit, offset)
+	rows, err := db.Query(context.Background(), sql)
 
 	if err != nil {
 		return []models.JoinProducts{}, err
@@ -36,6 +36,27 @@ func GetAllProducts(page int, limit int) ([]models.JoinProducts, error) {
 
 	if err != nil {
 		return []models.JoinProducts{}, err
+	}
+
+	return products, err
+}
+func GetAllProductsWithPagination(page int, limit int) ([]models.Products, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	var offset int = (page - 1) * limit
+
+	sql := `SELECT * FROM products limit $1 offset $2`
+
+	rows, err := db.Query(context.Background(), sql, limit, offset)
+
+	if err != nil {
+		return []models.Products{}, err
+	}
+
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.Products])
+
+	if err != nil {
+		return []models.Products{}, err
 	}
 
 	return products, err

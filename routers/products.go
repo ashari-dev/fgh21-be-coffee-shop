@@ -8,6 +8,7 @@ import (
 
 func ProductsRouters(r *gin.RouterGroup) {
 	r.GET("", controllers.ListAllProducts)
+	r.GET("/", controllers.ListProductsWithPagination)
 	r.POST("", controllers.CreateProduct)
 	r.GET("/:id", controllers.ListProductById)
 	r.PATCH("/:id", controllers.UpdateProduct)
@@ -18,6 +19,5 @@ func ProductsRouters(r *gin.RouterGroup) {
 	r.GET("/variant/:id", controllers.ListProductVariantById)
 	r.GET("/categoryproducts/", controllers.ListAllCategoryProduct)
 	r.GET("/categoryproducts/:id", controllers.GetCategoryProductByCategoryId)
-
 
 }

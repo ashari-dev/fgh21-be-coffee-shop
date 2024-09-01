@@ -15,6 +15,6 @@ func main() {
 	r.Use(cors.New(config))
 	routers.RouterCombain(r)
 
-	r.Run("0.0.0.0:8000")
+	r.Run("0.0.0.0:8000")	
 
 }

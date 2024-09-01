@@ -11,6 +11,32 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// Id       int    `json:"id"`
+// FullName string `json:"fullName" db:"full_name"`
+// Email    string `json:"email" `
+// PhoneNumber string  `json:"phoneNumber" db:"phone_number"`
+// Address     string  `json:"address"`
+// Image       *string `json:"image"`
+
+func FindAllProfiles() ([]models.ProfileJoinUser, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `SELECT p.id, p.full_name, u.email, p.phone_number,
+		p.address, p.image
+		FROM profile p 
+		JOIN users u ON u.id = p.user_id`
+
+	rows, _ := db.Query(context.Background(),
+		sql,
+	)
+	profile, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.ProfileJoinUser])
+	if err != nil {
+		return []models.ProfileJoinUser{}, err
+	}
+	return profile, err
+}
+
 func FindProfileById(id int) (dtos.ProfileUser, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
@@ -23,7 +49,7 @@ func FindProfileById(id int) (dtos.ProfileUser, error) {
 		WHERE p.user_id = $1
 		`
 
-	row, err := db.Query(context.Background(), sql,id)
+	row, err := db.Query(context.Background(), sql, id)
 
 	if err != nil {
 		return dtos.ProfileUser{}, err
@@ -88,22 +114,32 @@ func UpdateProfile(data models.Profile, id int) (dtos.ProfileJoinUser, error) {
 	return result, err
 }
 
+func UpdateProfileImage(data models.Profile, id int) (models.Profile, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `UPDATE profile SET "image" = $1 WHERE user_id=$2 returning *`
+
+	row, err := db.Query(context.Background(), sql, data.Image, id)
+	if err != nil {
+		return models.Profile{}, nil
+	}
+
+	profile, err := pgx.CollectOneRow(row, pgx.RowToStructByName[models.Profile])
+	if err != nil {
+		return models.Profile{}, nil
+	}
+
+	return profile, nil
+}
+
 func RemoveProfile(id int) error {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	// profileDelete, err := FindProfileById(id)
-	// if err != nil {
-	// 	return dtos.ProfileJoinUser{}, err
-	// }
-
 	sql := `DELETE FROM profile WHERE id=$1;`
 
 	db.Exec(context.Background(), sql, id)
-
-	// if query.RowsAffected() == 0 {
-	// 	return fmt.Errorf("data not found")
-	// }
 
 	return nil
 }

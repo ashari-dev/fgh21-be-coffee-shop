@@ -10,5 +10,7 @@ import (
 func ProfileRouters(rg *gin.RouterGroup) {
 	rg.GET("/",middlewares.AuthMiddleware(), controllers.FindProfileById)
 	rg.PATCH("/", middlewares.AuthMiddleware(), controllers.UpdateProfile)
+	rg.GET("", controllers.GetALLProfiles)
 	rg.DELETE("/:id", controllers.DeleteProfile)
+	rg.PATCH("/img", middlewares.AuthMiddleware(), controllers.UploadProfileImage)
 }

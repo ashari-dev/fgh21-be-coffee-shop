@@ -6,10 +6,25 @@ import (
 	"RGT/konis/models"
 	"RGT/konis/repository"
 	"fmt"
+	"net/http"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
+
+func GetALLProfiles(c *gin.Context) {
+	profile, err := repository.FindAllProfiles()
+
+	if err != nil {
+		lib.HandlerBadReq(c, "Failed to get all profile")
+		return
+	}
+
+	lib.HandlerOK(c, "List All Category", profile, nil)
+}
 
 func FindProfileById(c *gin.Context) {
 	id := c.GetInt("UserId")
@@ -68,4 +83,47 @@ func DeleteProfile(c *gin.Context) {
 	}
 
 	lib.HandlerOK(c, "Delete the product", selectUser, nil)
+}
+
+func UploadProfileImage(c *gin.Context) {
+	id := c.GetInt("UserId")
+	maxFile := 500 * 1024
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))
+
+	file, err := c.FormFile("profileImg")
+	if err != nil {
+		if err.Error() == "http: request body too large" {
+			lib.HandlerMaxFile(c, "file size too large, max capacity 500 kb")
+			return
+		}
+		lib.HandlerBadReq(c, "not file to upload")
+		return
+	}
+
+	allowExt := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	fileExt := strings.ToLower(filepath.Ext(file.Filename))
+	if !allowExt[fileExt] {
+		lib.HandlerBadReq(c, "extension file not validate")
+		return
+	}
+
+	newFile := uuid.New().String() + fileExt
+
+	uploadDir := "./img/profile/"
+	if err := c.SaveUploadedFile(file, uploadDir+newFile); err != nil {
+		lib.HandlerBadReq(c, "upload failed")
+		return
+	}
+
+	tes := "http://localhost:8000/img/profile/" + newFile
+
+	fmt.Println(tes)
+	fmt.Println(id)
+	profile, err := repository.UpdateProfileImage(models.Profile{Image: &tes}, id)
+	if err != nil {
+		lib.HandlerBadReq(c, "upload failed")
+		return
+	}
+
+	lib.HandlerOK(c, "Upload success", profile, nil)
 }

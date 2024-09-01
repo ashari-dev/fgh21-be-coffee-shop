@@ -5,17 +5,27 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
+	"log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 func ListAllProducts(c *gin.Context) {
-	products, err := repository.GetAllProducts(models.Products{})
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 3
+	}
+	products, err := repository.GetAllProducts(page, limit)
 	if err != nil {
 		lib.HandlerNotfound(c, "Products not found")
 		return
 	}
+	log.Println(products)
 
 	lib.HandlerOK(c, "List All Products", products, nil)
 }

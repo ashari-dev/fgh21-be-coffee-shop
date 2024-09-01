@@ -9,24 +9,22 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-
-func GetAllProducts(page int, limit int) ([]models.Products, error) {
+func GetAllProducts(page int, limit int) ([]models.JoinProducts, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 	var offset int = (page - 1) * limit
 
+	sql := `SELECT p.id, pi.image, p.title, p.price, p.description, array_agg(ps.id) as "product_sizes", array_agg(pt.order_type_id) as "order_type", pv.stock
+	FROM products p
+	JOIN product_images pi ON pi.product_id = p.id
+	JOIN product_sizes ps ON ps.product_id = p.id
+	JOIN product_order_types pt ON pt.product_id = p.id
+	JOIN product_variants pv ON pv.product_id = p.id
+	GROUP BY p.id, pi.image, p.title, p.description, pv.stock
+	limit $1 offset $2
+	`
 
-// 	sql := `SELECT p.id, pi.image, p.title, p.price, p.description, array_agg(ps.id) as "product_sizes", array_agg(pt.order_type_id) as "order_type", pv.stock
-// 	FROM products p
-// 	JOIN product_images pi ON pi.product_id = p.id
-// 	JOIN product_sizes ps ON ps.product_id = p.id
-// 	JOIN product_order_types pt ON pt.product_id = p.id
-// 	JOIN product_variants pv ON pv.product_id = p.id
-// 	GROUP BY p.id, pi.image, p.title, p.description, pv.stock
-// 	`
-
-	sql := `SELECT * FROM products limit $1 offset $2`
-
+	// sql := `SELECT * FROM products limit $1 offset $2`
 
 	rows, err := db.Query(context.Background(), sql, limit, offset)
 
@@ -42,6 +40,7 @@ func GetAllProducts(page int, limit int) ([]models.Products, error) {
 
 	return products, err
 }
+
 func AddNewProduct(data models.Products) (models.Products, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())

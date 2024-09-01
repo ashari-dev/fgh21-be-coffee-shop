@@ -5,7 +5,7 @@ type Profile struct {
 	FullName    string  `json:"fullName" db:"full_name"`
 	PhoneNumber *string `json:"phoneNumber" db:"phone_number"`
 	Address     *string `json:"address"`
-	Image       *string `json:"image"`
+	Image       *string `json:"image" db:"image"`
 	UserId      int     `json:"userId" db:"user_id"`
 }
 

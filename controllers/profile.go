@@ -6,6 +6,7 @@ import (
 	"RGT/konis/models"
 	"RGT/konis/repository"
 	"fmt"
+	"math"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -16,14 +17,51 @@ import (
 )
 
 func GetALLProfiles(c *gin.Context) {
-	profile, err := repository.FindAllProfiles()
+	search := c.Query("search")
+	limitParam := c.Query("limit")
+	limit, _ := strconv.Atoi(limitParam)
+	pageParam := c.Query("page")
+	page, _ := strconv.Atoi(pageParam)
 
-	if err != nil {
-		lib.HandlerBadReq(c, "Failed to get all profile")
-		return
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 3
 	}
 
-	lib.HandlerOK(c, "List All Category", profile, nil)
+	profile, count := repository.FindAllProfiles(search, page, limit)
+	totalPage := math.Ceil(float64(count) / float64(limit))
+
+	next := 0
+	if int(totalPage) >= 1 {
+		next = int(totalPage) - page
+	}
+	prev := page
+	if page >= 1 {
+		prev = page - 1
+	}
+
+	// if err != nil {
+	// 	lib.HandlerBadReq(c, "Failed to get all profile")
+	// 	return
+	// }
+
+	// TotalData int  `json:"totalData"`
+	// TotalPage int  `json:"totalPage"`
+	// Page      int  `json:"page"`
+	// Limit     int  `json:"limit"`
+	// Next      *int `json:"next,omitempty"`
+	// Prev      *int `json:"prev,omitempty"`
+
+	lib.HandlerOK(c, "List All Category", profile, lib.PageInfo{
+		TotalData: count,
+		TotalPage: int(totalPage),
+		Page:      page,
+		Limit:     limit,
+		Next:      &next,
+		Prev:      &prev,
+	})
 }
 
 func CreateProfileJoinUser(c *gin.Context) {
@@ -34,6 +72,36 @@ func CreateProfileJoinUser(c *gin.Context) {
 		lib.HandlerBadReq(c, "format invalid")
 		return
 	}
+
+	// maxFile := 500 * 1024
+	// c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))
+
+	// file, err := c.FormFile("profileImg")
+	// if err != nil {
+	// 	if err.Error() == "http: request body too large" {
+	// 		lib.HandlerMaxFile(c, "file size too large, max capacity 500 kb")
+	// 		return
+	// 	}
+	// 	lib.HandlerBadReq(c, "not file to upload")
+	// 	return
+	// }
+
+	// allowExt := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	// fileExt := strings.ToLower(filepath.Ext(file.Filename))
+	// if !allowExt[fileExt] {
+	// 	lib.HandlerBadReq(c, "extension file not validate")
+	// 	return
+	// }
+
+	// newFile := uuid.New().String() + fileExt
+
+	// uploadDir := "./img/profile/"
+	// if err := c.SaveUploadedFile(file, uploadDir+newFile); err != nil {
+	// 	lib.HandlerBadReq(c, "upload failed")
+	// 	return
+	// }
+
+	// tes := "http://localhost:8000/img/profile/" + newFile
 
 	user, err := repository.CreateUser(models.Users{
 		Email:    inputUser.Email,
@@ -49,7 +117,8 @@ func CreateProfileJoinUser(c *gin.Context) {
 		FullName:    inputUser.FullName,
 		PhoneNumber: &inputUser.PhoneNumber,
 		Address:     &inputUser.Address,
-		// Image:       &inputUser.Image,
+		// Image:       &tes,
+		Image:  &inputUser.Image,
 		UserId: user.Id,
 	})
 	if err != nil {
@@ -61,7 +130,8 @@ func CreateProfileJoinUser(c *gin.Context) {
 }
 
 func FindProfileById(c *gin.Context) {
-	id := c.GetInt("UserId")
+	// id := c.GetInt("UserId")
+	id, _ := strconv.Atoi(c.Param("id"))
 	profile, err := repository.FindProfileById(id)
 	fmt.Println(id)
 
@@ -74,8 +144,8 @@ func FindProfileById(c *gin.Context) {
 }
 
 func UpdateProfile(c *gin.Context) {
-	// id, _ := strconv.Atoi(c.Param("id"))
-	id := c.GetInt("UserId")
+	id, _ := strconv.Atoi(c.Param("id"))
+	// id := c.GetInt("UserId")
 	form := dtos.ProfileJoinUser{}
 	// fmt.Println(form)
 
@@ -90,7 +160,7 @@ func UpdateProfile(c *gin.Context) {
 		Email:    form.Email,
 		Password: *form.Password,
 	}, id)
-	
+
 	updateProfile, err := repository.UpdateProfile(models.Profile{
 		FullName:    form.FullName,
 		PhoneNumber: &form.PhoneNumber,
@@ -102,7 +172,7 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	lib.HandlerOK(c, "Success Edit Product", updateProfile, nil)
+	lib.HandlerOK(c, "Success update profile", updateProfile, nil)
 }
 
 func DeleteProfile(c *gin.Context) {

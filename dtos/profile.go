@@ -27,8 +27,8 @@ type FormProfileJoinUser struct {
 	Password    string `json:"-" form:"password"`
 	PhoneNumber string `json:"phoneNumber" form:"phoneNumber" db:"phone_number"`
 	Address     string `json:"address" form:"address"`
-	// Image       string `json:"image" form:"image"`
-	RoleId int `json:"roleId" form:"roleId" db:"role_id"`
+	Image       string `json:"image" form:"image"`
+	RoleId      int    `json:"roleId" form:"roleId" db:"role_id"`
 }
 
 type UploadImageProfile struct {
@@ -42,5 +42,5 @@ type ProfileUser struct {
 	PhoneNumber *string `json:"phoneNumber" form:"phoneNumber" db:"phone_number"`
 	Address     *string `json:"address" form:"address"`
 	Image       *string `json:"image"`
-	RoleId      int     `json:"roleId" db:"role_id"`
+	RoleId      *int    `json:"roleId" db:"role_id"`
 }

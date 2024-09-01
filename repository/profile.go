@@ -93,12 +93,11 @@ func UpdateProfile(data models.Profile, id int) (dtos.ProfileJoinUser, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `UPDATE profile SET ("full_name", "phone_number", "address") = ($1, $2, $3) WHERE id=$4 returning "id", "full_name", "phone_number", "address"`
+	sql := `UPDATE profile SET ("full_name", "phone_number", "address") = ($1, $2, $3) WHERE user_id=$4 returning "id", "full_name", "phone_number", "address"`
 
 	query := db.QueryRow(context.Background(), sql, data.FullName, data.PhoneNumber, data.Address, id)
 
 	var result dtos.ProfileJoinUser
-
 	err := query.Scan(
 		&result.Id,
 		&result.FullName,
@@ -106,6 +105,7 @@ func UpdateProfile(data models.Profile, id int) (dtos.ProfileJoinUser, error) {
 		&result.Address,
 		// &result.Image,
 	)
+	fmt.Println(err)
 
 	if err != nil {
 		return dtos.ProfileJoinUser{}, err

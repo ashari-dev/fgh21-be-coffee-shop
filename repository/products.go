@@ -9,10 +9,13 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+
 func GetAllProducts(page int, limit int) ([]models.Products, error) {
+
 	db := lib.DB()
 	defer db.Close(context.Background())
 	var offset int = (page - 1) * limit
+
 
 	// 	sql := `SELECT p.id, pi.image, p.title, p.price, p.description, array_agg(ps.id) as "product_sizes", array_agg(pt.order_type_id) as "order_type", pv.stock
 	// 	FROM products p
@@ -39,6 +42,7 @@ func GetAllProducts(page int, limit int) ([]models.Products, error) {
 
 	return products, err
 }
+
 func AddNewProduct(data models.Products) (models.Products, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())

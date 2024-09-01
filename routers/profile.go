@@ -8,6 +8,8 @@ import (
 )
 
 func ProfileRouters(rg *gin.RouterGroup) {
+	rg.GET("/",middlewares.AuthMiddleware(), controllers.FindProfileById)
+	rg.PATCH("/", middlewares.AuthMiddleware(), controllers.UpdateProfile)
 	rg.GET("", controllers.GetALLProfiles)
 	rg.POST("", controllers.CreateProfileJoinUser)
 	rg.PATCH("/:id", controllers.UpdateProfile)

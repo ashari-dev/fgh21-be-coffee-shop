@@ -15,6 +15,17 @@ import (
 	"github.com/google/uuid"
 )
 
+func GetALLProfiles(c *gin.Context) {
+	profile, err := repository.FindAllProfiles()
+
+	if err != nil {
+		lib.HandlerBadReq(c, "Failed to get all profile")
+		return
+	}
+
+	lib.HandlerOK(c, "List All Category", profile, nil)
+}
+
 func FindProfileById(c *gin.Context) {
 	id := c.GetInt("UserId")
 	profile, err := repository.FindProfileById(id)

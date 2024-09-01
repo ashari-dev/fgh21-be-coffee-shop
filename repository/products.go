@@ -9,40 +9,26 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// func GetAllProducts(data models.Products) ([]models.Products, error) {
-// 	db := lib.DB()
-// 	defer db.Close(context.Background())
 
-// 	sql := `SELECT * FROM products`
-
-// 	rows, err := db.Query(context.Background(), sql)
-
-// 	if err != nil {
-// 		return []models.Products{}, err
-// 	}
-
-// 	products, err := pgx.CollectRows(rows, pgx.RowToStructByName[models.Products])
-
-// 	if err != nil {
-// 		return []models.Products{}, err
-// 	}
-
-// 	return products, err
-// }
-func GetAllProducts(data models.JoinProducts) ([]models.JoinProducts, error) {
+func GetAllProducts(page int, limit int) ([]models.Products, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
+	var offset int = (page - 1) * limit
 
-	sql := `SELECT p.id, pi.image, p.title, p.price, p.description, array_agg(ps.id) as "product_sizes", array_agg(pt.order_type_id) as "order_type", pv.stock
-	FROM products p
-	JOIN product_images pi ON pi.product_id = p.id
-	JOIN product_sizes ps ON ps.product_id = p.id
-	JOIN product_order_types pt ON pt.product_id = p.id
-	JOIN product_variants pv ON pv.product_id = p.id
-	GROUP BY p.id, pi.image, p.title, p.description, pv.stock
-	`
 
-	rows, err := db.Query(context.Background(), sql)
+// 	sql := `SELECT p.id, pi.image, p.title, p.price, p.description, array_agg(ps.id) as "product_sizes", array_agg(pt.order_type_id) as "order_type", pv.stock
+// 	FROM products p
+// 	JOIN product_images pi ON pi.product_id = p.id
+// 	JOIN product_sizes ps ON ps.product_id = p.id
+// 	JOIN product_order_types pt ON pt.product_id = p.id
+// 	JOIN product_variants pv ON pv.product_id = p.id
+// 	GROUP BY p.id, pi.image, p.title, p.description, pv.stock
+// 	`
+
+	sql := `SELECT * FROM products limit $1 offset $2`
+
+
+	rows, err := db.Query(context.Background(), sql, limit, offset)
 
 	if err != nil {
 		return []models.JoinProducts{}, err

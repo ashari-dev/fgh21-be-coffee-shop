@@ -14,7 +14,10 @@ func ProductsRouters(r *gin.RouterGroup) {
 	r.DELETE("/:id", controllers.DeleteProduct)
 	r.GET("/productSizes", controllers.ListAllProductsSize)
 	r.GET("/productSizes/:id", controllers.GetProductsById)
+	r.GET("/variant", controllers.ListAllProductVariant)
+	r.GET("/variant/:id", controllers.ListProductVariantById)
 	r.GET("/categoryproducts/", controllers.ListAllCategoryProduct)
 	r.GET("/categoryproducts/:id", controllers.GetCategoryProductByCategoryId)
+
 
 }

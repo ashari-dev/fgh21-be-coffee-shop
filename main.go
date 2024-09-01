@@ -9,12 +9,16 @@ import (
 
 func main() {
 	r := gin.Default()
-	routers.RouterCombain(r)
+	r.Static("/img/profile", "./img/profile")
+	r.Static("/img/product", "./img/product")
+
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	r.Use(cors.New(config))
 
-	r.Run("0.0.0.0:8000")
+	routers.RouterCombain(r)
+
+	r.Run("0.0.0.0:8000")	
 
 }

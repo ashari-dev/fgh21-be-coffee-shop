@@ -1,5 +1,8 @@
 INSERT INTO "order_types" 
     ("name", "add_price") 
 VALUES
-    ('Hot', '0'),
-    ('Ice', '5000');
+
+    ('Dine In', '0'),
+    ('Door Delivery', '4000'),
+    ('Pick Up', '3000');
+

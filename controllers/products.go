@@ -12,9 +12,15 @@ import (
 )
 
 func ListAllProducts(c *gin.Context) {
-	// id, _ := strconv.Atoi(c.Param("id"))
-
-	products, err := repository.GetAllProducts(models.JoinProducts{})
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 3
+	}
+	products, err := repository.GetAllProducts(page, limit)
 	if err != nil {
 		lib.HandlerNotfound(c, "Products not found")
 		return
@@ -54,6 +60,7 @@ func ListProductById(c *gin.Context) {
 
 	if err != nil {
 		lib.HandlerNotfound(c, "Data not found")
+		return
 	}
 
 	if selectedProduct.Id == 0 {

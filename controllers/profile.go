@@ -26,6 +26,40 @@ func GetALLProfiles(c *gin.Context) {
 	lib.HandlerOK(c, "List All Category", profile, nil)
 }
 
+func CreateProfileJoinUser(c *gin.Context) {
+	inputUser := dtos.FormProfileJoinUser{}
+	err := c.Bind(&inputUser)
+	fmt.Println(inputUser)
+	if err != nil {
+		lib.HandlerBadReq(c, "format invalid")
+		return
+	}
+
+	user, err := repository.CreateUser(models.Users{
+		Email:    inputUser.Email,
+		Password: inputUser.Password,
+		RoleId:   inputUser.RoleId,
+	})
+	if err != nil {
+		lib.HandlerBadReq(c, "data not verified")
+		return
+	}
+
+	profile, err := repository.CreateProfileJoinUser(models.Profile{
+		FullName:    inputUser.FullName,
+		PhoneNumber: &inputUser.PhoneNumber,
+		Address:     &inputUser.Address,
+		// Image:       &inputUser.Image,
+		UserId: user.Id,
+	})
+	if err != nil {
+		lib.HandlerBadReq(c, "data not verified")
+		return
+	}
+
+	lib.HandlerOK(c, "Register success", profile, nil)
+}
+
 func FindProfileById(c *gin.Context) {
 	id := c.GetInt("UserId")
 	profile, err := repository.FindProfileById(id)

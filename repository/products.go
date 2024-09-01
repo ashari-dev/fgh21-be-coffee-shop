@@ -33,9 +33,9 @@ func AddNewProduct(data models.Products) (models.Products, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `INSERT into products ("title", "description", "price") VALUES ($1, $2, $3) returning id, "title", "description", "price", "user_id"`
+	sql := `INSERT into products ("title", "description", "price", "stock", "user_id") VALUES ($1, $2, $3, $4, $5) returning id, "title", "description", "price", "stock", "user_id"`
 
-	query, err := db.Query(context.Background(), sql, data.Title, data.Description, data.Price)
+	query, err := db.Query(context.Background(), sql, data.Title, data.Description, data.Price, data.Stock, data.UserId)
 
 	if err != nil {
 		return models.Products{}, err
@@ -74,9 +74,9 @@ func ChangeDataProduct(data models.Products, id int) (models.Products, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `UPDATE products SET ("title", "description", "price") = ($1, $2, $3) WHERE id=$4 returning "id", "title", "description", "price"`
+	sql := `UPDATE products SET ("title", "description", "price", "stock") = ($1, $2, $3, $4) WHERE id=$5 returning "id", "title", "description", "price", "stock"`
 
-	query := db.QueryRow(context.Background(), sql, data.Title, data.Description, data.Price, id)
+	query := db.QueryRow(context.Background(), sql, data.Title, data.Description, data.Price, data.Stock, id)
 
 	var result models.Products
 
@@ -85,6 +85,7 @@ func ChangeDataProduct(data models.Products, id int) (models.Products, error) {
 		&result.Title,
 		&result.Description,
 		&result.Price,
+		&result.Stock,
 	)
 
 	if err != nil {
@@ -110,3 +111,45 @@ func RemoveTheProduct(data models.Products, id int) error {
 
 	return nil
 }
+func GetAllProductsWithPagination(page int, limit int) ([]models.Products, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	var offset int = (page - 1) * limit
+
+	sql := `SELECT * FROM products limit $1 offset $2`
+
+	rows, err := db.Query(context.Background(), sql, limit, offset)
+
+	if err != nil {
+		return []models.Products{}, err
+	}
+
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.Products])
+
+	if err != nil {
+		return []models.Products{}, err
+	}
+
+	return products, err
+}
+
+// func FilterProduct(dt) {
+// 	db := lib.DB()
+// 	defer db.Close(context.Background())
+
+// 	sql := `select * from "products" where "price" >= $1 and "price" <= $2;`
+
+// 	query, err := db.Query(context.Background(), sql, lowPrice, highPrice,)
+
+// 	if err != nil {
+// 		return models.Products{}, err
+// 	}
+
+// 	selectedRow, err := pgx.CollectOneRow(query, pgx.RowToStructByName[models.Products])
+
+// 	if err != nil {
+// 		return models.Products{}, err
+// 	}
+
+// 	return selectedRow, err
+// }

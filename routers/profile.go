@@ -11,4 +11,5 @@ func ProfileRouters(rg *gin.RouterGroup) {
 	rg.PATCH("/:id", controllers.UpdateProfile)
 	rg.GET("/",middlewares.AuthMiddleware(), controllers.FindProfileById)
 	rg.DELETE("/:id", controllers.DeleteProfile)
+	rg.PATCH("/img", middlewares.AuthMiddleware(), controllers.UploadProfileImage)
 }

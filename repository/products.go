@@ -10,11 +10,11 @@ import (
 )
 
 
-func GetAllProducts(page int, limit int) ([]models.Products, error) {
-
+func GetAllProducts(page int, limit int) ([]models.Product, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 	var offset int = (page - 1) * limit
+
 
 
 	// 	sql := `SELECT p.id, pi.image, p.title, p.price, p.description, array_agg(ps.id) as "product_sizes", array_agg(pt.order_type_id) as "order_type", pv.stock
@@ -26,18 +26,20 @@ func GetAllProducts(page int, limit int) ([]models.Products, error) {
 	// 	GROUP BY p.id, pi.image, p.title, p.description, pv.stock
 	// 	`
 
+
 	sql := `SELECT * FROM products limit $1 offset $2`
 
 	rows, err := db.Query(context.Background(), sql, limit, offset)
 
 	if err != nil {
-		return []models.Products{}, err
+		return []models.Product{}, err
 	}
 
-	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.Products])
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByName[models.Product])
 
 	if err != nil {
-		return []models.Products{}, err
+		return []models.Product{}, err
+
 	}
 
 	return products, err

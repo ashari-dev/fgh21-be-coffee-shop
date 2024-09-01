@@ -5,6 +5,7 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -22,6 +23,7 @@ func ListAllProducts(c *gin.Context) {
 	}
 	products, err := repository.GetAllProducts(page, limit)
 	if err != nil {
+		fmt.Println(err)
 		lib.HandlerNotfound(c, "Products not found")
 		return
 	}

@@ -5,17 +5,21 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
+	"log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 func ListAllProducts(c *gin.Context) {
-	products, err := repository.GetAllProducts(models.Products{})
+	// id, _ := strconv.Atoi(c.Param("id"))
+
+	products, err := repository.GetAllProducts(models.JoinProducts{})
 	if err != nil {
 		lib.HandlerNotfound(c, "Products not found")
 		return
 	}
+	log.Println(products)
 
 	lib.HandlerOK(c, "List All Products", products, nil)
 }

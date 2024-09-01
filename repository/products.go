@@ -9,13 +9,14 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func GetAllProducts(data models.Products) ([]models.Products, error) {
+func GetAllProducts(page int, limit int) ([]models.Products, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
+	var offset int = (page - 1) * limit
 
-	sql := `SELECT * FROM products`
+	sql := `SELECT * FROM products limit $1 offset $2`
 
-	rows, err := db.Query(context.Background(), sql)
+	rows, err := db.Query(context.Background(), sql, limit, offset)
 
 	if err != nil {
 		return []models.Products{}, err

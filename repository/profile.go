@@ -22,7 +22,7 @@ func FindAllProfiles() ([]models.ProfileJoinUser, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `SELECT p.id, p.full_name, u.email, p.phone_number,
+	sql := `SELECT p.id, p.full_name, p.phone_number, u.email, 
 		p.address, p.image
 		FROM profile p 
 		JOIN users u ON u.id = p.user_id`
@@ -83,6 +83,38 @@ func CreateProfile(data models.Profile) (models.Profile, error) {
 	profile, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Profile])
 
 	if err != nil {
+		return models.Profile{}, nil
+	}
+
+	return profile, err
+}
+
+// Id          int     `json:"id"`
+// 	FullName    string  `json:"fullName" db:"full_name"`
+// 	PhoneNumber *string `json:"phoneNumber" db:"phone_number"`
+// 	Address     *string `json:"address"`
+// 	Image       *string `json:"image"`
+// 	UserId      int     `json:"userId" db:"user_id"`
+
+func CreateProfileJoinUser(data models.Profile) (models.Profile, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `
+		INSERT INTO profile (full_name, phone_number, address, image, user_id)
+		VALUES ($1, $2, $3, $4, $5) RETURNING *
+		`
+	row, err := db.Query(context.Background(), sql, data.FullName, data.PhoneNumber, data.Address, data.Image, data.UserId)
+
+	if err != nil {
+		fmt.Println(err)
+		return models.Profile{}, nil
+	}
+
+	profile, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Profile])
+
+	if err != nil {
+		// fmt.Println(err)
 		return models.Profile{}, nil
 	}
 

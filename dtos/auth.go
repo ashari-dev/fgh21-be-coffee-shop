@@ -6,9 +6,9 @@ type LoginForm struct {
 }
 
 type RegisterForm struct {
-	FullName        string `form:"fullName"`
+	FullName        string `form:"fullName" binding:"required"`
 	Email           string `form:"email" binding:"email"`
-	Password        string `form:"password" binding:"min=6"`
+	Password        string `form:"password" binding:"min=8"`
 	ConfirmPassword string `form:"cPassword" binding:"eqfield=Password"`
 }
 

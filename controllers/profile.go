@@ -54,7 +54,7 @@ func GetALLProfiles(c *gin.Context) {
 	// Next      *int `json:"next,omitempty"`
 	// Prev      *int `json:"prev,omitempty"`
 
-	lib.HandlerOK(c, "List All Category", profile, lib.PageInfo{
+	lib.HandlerOK(c, "List All Profiles", profile, lib.PageInfo{
 		TotalData: count,
 		TotalPage: int(totalPage),
 		Page:      page,

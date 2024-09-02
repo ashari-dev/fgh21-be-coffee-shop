@@ -104,7 +104,7 @@ func UpdateUserById(data models.Users, id int) (models.Users, error) {
 	data.Password = lib.Encrypt(data.Password)
 
 	sql := `
-		UPDATE users SET(email, password)=($1, $2) 
+		UPDATE users SET(email, password)=(COALESCE(NULLIF($1,''),password), COALESCE(NULLIF($2,''),password)) 
 		WHERE id = $3 RETURNING *
 		`
 	row, err := db.Query(context.Background(), sql, data.Email, data.Password, id)

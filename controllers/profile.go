@@ -130,8 +130,11 @@ func CreateProfileJoinUser(c *gin.Context) {
 }
 
 func FindProfileById(c *gin.Context) {
-	// id := c.GetInt("UserId")
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.GetInt("UserId")
+	if id == 0 {
+		id, _ = strconv.Atoi(c.Param("id"))
+	}
+
 	profile, err := repository.FindProfileById(id)
 	fmt.Println(id)
 
@@ -144,8 +147,10 @@ func FindProfileById(c *gin.Context) {
 }
 
 func UpdateProfile(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
-	// id := c.GetInt("UserId")
+	id := c.GetInt("UserId")
+	if id == 0 {
+		id, _ = strconv.Atoi(c.Param("id"))
+	}
 	form := dtos.ProfileJoinUser{}
 	// fmt.Println(form)
 
@@ -156,10 +161,17 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	repository.UpdateUserById(models.Users{
+	fmt.Println(form)
+
+	user, err := repository.UpdateUserById(models.Users{
 		Email:    form.Email,
 		Password: *form.Password,
 	}, id)
+
+	if err != nil {
+		lib.HandlerBadReq(c, "Cannot update user")
+		return
+	}
 
 	updateProfile, err := repository.UpdateProfile(models.Profile{
 		FullName:    form.FullName,
@@ -171,6 +183,8 @@ func UpdateProfile(c *gin.Context) {
 		lib.HandlerBadReq(c, "Required to input data")
 		return
 	}
+
+	updateProfile.Email = user.Email
 
 	lib.HandlerOK(c, "Success update profile", updateProfile, nil)
 }

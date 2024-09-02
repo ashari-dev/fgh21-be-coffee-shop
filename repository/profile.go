@@ -18,23 +18,48 @@ import (
 // Address     string  `json:"address"`
 // Image       *string `json:"image"`
 
-func FindAllProfiles() ([]models.ProfileJoinUser, error) {
+func FindAllProfiles(search string, page int, limit int) ([]models.ProfileJoinUser, int) {
 	db := lib.DB()
 	defer db.Close(context.Background())
+	offset := 0
+	if page > 1 {
+		offset = (page - 1) * limit
+	}
 
-	sql := `SELECT p.id, p.full_name, p.phone_number, u.email, 
-		p.address, p.image
-		FROM profile p 
-		JOIN users u ON u.id = p.user_id`
+	// sql := `SELECT p.id, p.full_name, p.phone_number, u.email,
+	// 	p.address, p.image
+	// 	FROM profile p
+	// 	JOIN users u ON u.id = p.user_id`
+
+	sql := `SELECT p.id, p.full_name, p.phone_number, u.email, p.address, p.image 
+	FROM profile p
+	JOIN users u ON u.id = p.user_id
+	where "full_name" ilike '%' || $1 || '%'
+	limit $2 offset $3`
 
 	rows, _ := db.Query(context.Background(),
-		sql,
+		sql, search, limit, offset,
 	)
+	count := TotalProfile(search)
+
 	profile, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.ProfileJoinUser])
 	if err != nil {
-		return []models.ProfileJoinUser{}, err
+		return []models.ProfileJoinUser{}, count
 	}
-	return profile, err
+
+	return profile, count
+}
+
+func TotalProfile(search string) int {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	inputSQL := `select count(id) as "total" from "profile" where "full_name" ilike '%' || $1 || '%'`
+	rows := db.QueryRow(context.Background(), inputSQL, search)
+	var result int
+	rows.Scan(
+		&result,
+	)
+	return result
 }
 
 func FindProfileById(id int) (dtos.ProfileUser, error) {

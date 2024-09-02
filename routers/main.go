@@ -16,5 +16,4 @@ func RouterCombain(r *gin.Engine) {
 	CartsRouters(r.Group("/carts"))
 	TransactionRouters(r.Group("/transaction"))
 	TransactionStatusRouters(r.Group("/transaction-status"))
-	// ProductOrderTypeRouters(r.Group("/product-order-type"))
 }

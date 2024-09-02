@@ -10,12 +10,12 @@ type Profile struct {
 }
 
 type ProfileJoinUser struct {
-	Id       int    `json:"id"`
-	FullName string `json:"fullName" db:"full_name"`
-	Email    string `json:"email"`
-	// Password    *string `json:"-" form:"password"`
+	Id          int     `json:"id"`
+	FullName    string  `json:"fullName" db:"full_name"`
 	PhoneNumber *string `json:"phoneNumber" db:"phone_number"`
-	Address     *string `json:"address"`
-	Image       *string `json:"image"`
+	Email       string  `json:"email"`
+	// Password    *string `json:"-" form:"password"`
+	Address *string `json:"address"`
+	Image   *string `json:"image"`
 	// RoleId      *int    `json:"roleId" db:"role_id"`
 }

@@ -2,13 +2,14 @@ package routers
 
 import (
 	"RGT/konis/controllers"
+	"RGT/konis/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
 
 func ProfileRouters(rg *gin.RouterGroup) {
 	// rg.Use(middlewares.AuthMiddleware())
-	// rg.GET("/",middlewares.AuthMiddleware(), controllers.FindProfileById)
+	rg.GET("/login",middlewares.AuthMiddleware(), controllers.FindProfileById)
 	rg.PATCH("/", controllers.UpdateProfile)
 	rg.GET("", controllers.GetALLProfiles)
 	// rg.GET("", controllers.FindProfileById)

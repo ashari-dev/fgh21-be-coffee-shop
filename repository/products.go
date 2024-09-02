@@ -168,6 +168,27 @@ func GetAllOurProductsWithPagination(page int, limit int) ([]models.JProducts, e
 
 	return products, err
 }
+func GetAllProductsWithFilterPagination(title string, page int, limit int) ([]models.Products, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	var offset int = (page - 1) * limit
+
+	sql := `select * from "products" where "title" ilike $1 limit $2 offset $3`
+
+	rows, err := db.Query(context.Background(), sql, "%"+title+"%", limit, offset)
+
+	if err != nil {
+		return []models.Products{}, err
+	}
+
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.Products])
+
+	if err != nil {
+		return []models.Products{}, err
+	}
+
+	return products, err
+}
 
 // func FilterProduct(dt) {
 // 	db := lib.DB()

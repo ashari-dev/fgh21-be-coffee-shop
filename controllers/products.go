@@ -222,3 +222,45 @@ func ListAllOurProductsWithPagination(c *gin.Context) {
 
 	lib.HandlerOK(c, "List All Products", products, nil)
 }
+
+// func ListAllFilterProductsWithPagination(c *gin.Context) {
+// 	data := c.Query("data")
+// 	page, _ := strconv.Atoi(c.Query("page"))
+// 	limit, _ := strconv.Atoi(c.Query("limit"))
+// 	if page < 1 {
+// 		page = 1
+// 	}
+// 	if limit < 1 {
+// 		limit = 100
+// 	}
+// 	products, err := repository.GetAllProductsWithFilterPagination(data, page, limit)
+// 	fmt.Println(err)
+// 	if err != nil {
+// 		lib.HandlerNotfound(c, "Products not found")
+// 		return
+// 	}
+// 	log.Println(products)
+
+// 	lib.HandlerOK(c, "List Filter Products", products, nil)
+// }
+
+func ListAllFilterProductsWithPagination(c *gin.Context) {
+	title := c.Query("title")
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 100
+	}
+	products, err := repository.GetAllProductsWithFilterPagination(title, page, limit)
+	fmt.Println(err)
+	if err != nil {
+		lib.HandlerNotfound(c, "Products not found")
+		return
+	}
+	log.Println(products)
+
+	lib.HandlerOK(c, "List Filter Products", products, nil)
+}

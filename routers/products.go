@@ -10,6 +10,8 @@ import (
 func ProductsRouters(r *gin.RouterGroup) {
 	// 	r.GET("", controllers.ListAllProducts)
 	r.GET("/", controllers.ListProductsWithPagination)
+	r.GET("/filter/", controllers.ListAllFilterProductsWithPagination)
+
 	r.GET("/our-product/", controllers.ListAllOurProductsWithPagination)
 	r.POST("", middlewares.AuthMiddleware(), controllers.CreateProduct)
 

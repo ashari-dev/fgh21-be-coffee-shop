@@ -5,11 +5,39 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5"
 )
 
-func FindProfileById(id int) (dtos.ProfileJoinUser, error) {
+// Id       int    `json:"id"`
+// FullName string `json:"fullName" db:"full_name"`
+// Email    string `json:"email" `
+// PhoneNumber string  `json:"phoneNumber" db:"phone_number"`
+// Address     string  `json:"address"`
+// Image       *string `json:"image"`
+
+func FindAllProfiles() ([]models.ProfileJoinUser, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `SELECT p.id, p.full_name, p.phone_number, u.email, 
+		p.address, p.image
+		FROM profile p 
+		JOIN users u ON u.id = p.user_id`
+
+	rows, _ := db.Query(context.Background(),
+		sql,
+	)
+	profile, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.ProfileJoinUser])
+	if err != nil {
+		return []models.ProfileJoinUser{}, err
+	}
+	return profile, err
+}
+
+func FindProfileById(id int) (dtos.ProfileUser, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
@@ -18,19 +46,21 @@ func FindProfileById(id int) (dtos.ProfileJoinUser, error) {
 		p.address, p.image, u.role_id 
 		FROM profile p 
 		JOIN users u ON u.id = p.user_id
-		WHERE p.id = $1
+		WHERE p.user_id = $1
 		`
 
 	row, err := db.Query(context.Background(), sql, id)
 
 	if err != nil {
-		return dtos.ProfileJoinUser{}, err
+		return dtos.ProfileUser{}, err
 	}
 
-	data, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[dtos.ProfileJoinUser])
+	data, err := pgx.CollectOneRow(row, pgx.RowToStructByName[dtos.ProfileUser])
 
 	if err != nil {
-		return dtos.ProfileJoinUser{}, err
+		log.Println(err)
+		fmt.Println(err)
+		return dtos.ProfileUser{}, err
 	}
 
 	return data, nil
@@ -59,16 +89,47 @@ func CreateProfile(data models.Profile) (models.Profile, error) {
 	return profile, err
 }
 
+// Id          int     `json:"id"`
+// 	FullName    string  `json:"fullName" db:"full_name"`
+// 	PhoneNumber *string `json:"phoneNumber" db:"phone_number"`
+// 	Address     *string `json:"address"`
+// 	Image       *string `json:"image"`
+// 	UserId      int     `json:"userId" db:"user_id"`
+
+func CreateProfileJoinUser(data models.Profile) (models.Profile, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `
+		INSERT INTO profile (full_name, phone_number, address, image, user_id)
+		VALUES ($1, $2, $3, $4, $5) RETURNING *
+		`
+	row, err := db.Query(context.Background(), sql, data.FullName, data.PhoneNumber, data.Address, data.Image, data.UserId)
+
+	if err != nil {
+		fmt.Println(err)
+		return models.Profile{}, nil
+	}
+
+	profile, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Profile])
+
+	if err != nil {
+		// fmt.Println(err)
+		return models.Profile{}, nil
+	}
+
+	return profile, err
+}
+
 func UpdateProfile(data models.Profile, id int) (dtos.ProfileJoinUser, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `UPDATE profile SET ("full_name", "phone_number", "address") = ($1, $2, $3) WHERE id=$4 returning "id", "full_name", "phone_number", "address"`
+	sql := `UPDATE profile SET ("full_name", "phone_number", "address") = ($1, $2, $3) WHERE user_id=$4 returning "id", "full_name", "phone_number", "address"`
 
 	query := db.QueryRow(context.Background(), sql, data.FullName, data.PhoneNumber, data.Address, id)
 
 	var result dtos.ProfileJoinUser
-
 	err := query.Scan(
 		&result.Id,
 		&result.FullName,
@@ -76,6 +137,7 @@ func UpdateProfile(data models.Profile, id int) (dtos.ProfileJoinUser, error) {
 		&result.Address,
 		// &result.Image,
 	)
+	fmt.Println(err)
 
 	if err != nil {
 		return dtos.ProfileJoinUser{}, err
@@ -84,22 +146,32 @@ func UpdateProfile(data models.Profile, id int) (dtos.ProfileJoinUser, error) {
 	return result, err
 }
 
+func UpdateProfileImage(data models.Profile, id int) (models.Profile, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `UPDATE profile SET "image" = $1 WHERE user_id=$2 returning *`
+
+	row, err := db.Query(context.Background(), sql, data.Image, id)
+	if err != nil {
+		return models.Profile{}, nil
+	}
+
+	profile, err := pgx.CollectOneRow(row, pgx.RowToStructByName[models.Profile])
+	if err != nil {
+		return models.Profile{}, nil
+	}
+
+	return profile, nil
+}
+
 func RemoveProfile(id int) error {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	// profileDelete, err := FindProfileById(id)
-	// if err != nil {
-	// 	return dtos.ProfileJoinUser{}, err
-	// }
-
 	sql := `DELETE FROM profile WHERE id=$1;`
 
 	db.Exec(context.Background(), sql, id)
-
-	// if query.RowsAffected() == 0 {
-	// 	return fmt.Errorf("data not found")
-	// }
 
 	return nil
 }

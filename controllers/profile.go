@@ -54,7 +54,7 @@ func GetALLProfiles(c *gin.Context) {
 	// Next      *int `json:"next,omitempty"`
 	// Prev      *int `json:"prev,omitempty"`
 
-	lib.HandlerOK(c, "List All Category", profile, lib.PageInfo{
+	lib.HandlerOK(c, "List All profile", profile, lib.PageInfo{
 		TotalData: count,
 		TotalPage: int(totalPage),
 		Page:      page,
@@ -147,8 +147,6 @@ func UpdateProfile(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	// id := c.GetInt("UserId")
 	form := dtos.ProfileJoinUser{}
-	// fmt.Println(form)
-
 	err := c.Bind(&form)
 
 	if err != nil {

@@ -1,2 +1,3 @@
 
-TRUNCATE TABLE transaction_status
+
+TRUNCATE table transaction_status;

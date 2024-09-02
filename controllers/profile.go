@@ -147,12 +147,11 @@ func FindProfileById(c *gin.Context) {
 }
 
 func UpdateProfile(c *gin.Context) {
-	id := c.GetInt("UserId")
+	id, _ := strconv.Atoi(c.Param("id"))
 	if id == 0 {
-		id, _ = strconv.Atoi(c.Param("id"))
+		id = c.GetInt("UserId")
 	}
 	form := dtos.ProfileJoinUser{}
-	// fmt.Println(form)
 
 	err := c.Bind(&form)
 
@@ -161,7 +160,10 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(form)
+	if form.Password == nil {
+		emptyPassword := ""
+		form.Password = &emptyPassword
+	}
 
 	user, err := repository.UpdateUserById(models.Users{
 		Email:    form.Email,

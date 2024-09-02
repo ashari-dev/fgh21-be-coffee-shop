@@ -4,7 +4,6 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -89,7 +88,7 @@ func CreateUser(data models.Users) (models.Users, error) {
 	}
 
 	user, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Users])
-	fmt.Println(user)
+	// fmt.Println(user)
 	if err != nil {
 		return models.Users{}, nil
 	}
@@ -101,12 +100,15 @@ func UpdateUserById(data models.Users, id int) (models.Users, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	data.Password = lib.Encrypt(data.Password)
+	if data.Password != "" {
+		data.Password = lib.Encrypt(data.Password)
+	}
 
 	sql := `
-		UPDATE users SET(email, password)=(COALESCE(NULLIF($1,''),password), COALESCE(NULLIF($2,''),password)) 
+		UPDATE users SET(email, password)=(COALESCE(NULLIF($1,''),"email"), COALESCE(NULLIF($2,''),"password")) 
 		WHERE id = $3 RETURNING *
 		`
+
 	row, err := db.Query(context.Background(), sql, data.Email, data.Password, id)
 
 	if err != nil {
@@ -114,7 +116,6 @@ func UpdateUserById(data models.Users, id int) (models.Users, error) {
 	}
 
 	user, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Users])
-	// fmt.Println(user)
 	if err != nil {
 		return models.Users{}, nil
 	}

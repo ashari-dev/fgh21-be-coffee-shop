@@ -2,14 +2,14 @@ package routers
 
 import (
 	"RGT/konis/controllers"
+	"RGT/konis/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
 
 func ProductsRouters(r *gin.RouterGroup) {
 
-	r.GET("", controllers.ListAllProducts)
-	r.POST("", controllers.CreateProduct)
+
 	r.GET("/", controllers.ListProductsWithPagination)
 	r.GET("/filter/", controllers.ListAllFilterProductsWithPagination)
 	r.GET("/our-product/", controllers.ListAllOurProductsWithPagination)

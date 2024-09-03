@@ -9,8 +9,8 @@ import (
 
 func ProfileRouters(rg *gin.RouterGroup) {
 	// rg.Use(middlewares.AuthMiddleware())
-	rg.GET("/login",middlewares.AuthMiddleware(), controllers.FindProfileById)
-	rg.PATCH("/", controllers.UpdateProfile)
+	rg.GET("/login", middlewares.AuthMiddleware(), controllers.FindProfileById)
+	rg.PATCH("", middlewares.AuthMiddleware(), controllers.UpdateProfile)
 	rg.GET("", controllers.GetALLProfiles)
 	// rg.GET("", controllers.FindProfileById)
 	rg.POST("", controllers.CreateProfileJoinUser)

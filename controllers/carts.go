@@ -24,27 +24,29 @@ func ListAllCarts(ctx *gin.Context) {
 	lib.HandlerOK(ctx, "List All Carts", carts, nil)
 }
 func CreateOneCarts(ctx *gin.Context) {
-	id := ctx.GetInt("UserId")
-
-	// id := 1
-
-	form := dtos.FormCarts{}
-	err := ctx.Bind(&form)
-
+	userId := ctx.GetInt("UserId")
+	productId, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		fmt.Println(err)
-		lib.HandlerBadReq(ctx, "Quantity is null")
+		lib.HandlerBadReq(ctx, "Invalid Product Id")
 		return
 	}
 
-	fmt.Println(id)
+	form := dtos.FormCarts{}
+	err = ctx.Bind(&form)
+
+	if err != nil {
+		fmt.Println(err)
+		lib.HandlerBadReq(ctx, "Invalid Input Data")
+		return
+	}
 
 	carts, err := repository.CreateCarts(models.Carts{
-		Quantity:     form.Quantity,
-		VariantId:    form.VariantProduct,
-		SizesProduct: form.SizesProduct,
-		ProductId:    form.ProductId,
-		UserId:       id,
+		TransactionDetail: form.TransactionDetail,
+		Quantity:          form.Quantity,
+		VariantId:         form.Variant,
+		ProductSizeId:     form.ProductSize,
+		ProductId:         productId,
+		UserId:            userId,
 	})
 
 	if err != nil {
@@ -56,8 +58,8 @@ func CreateOneCarts(ctx *gin.Context) {
 }
 
 func DeleteOneCarts(ctx *gin.Context) {
-	id, _ := strconv.Atoi(ctx.Param("id"))
-	selectUser, err := repository.GetCartsById(id)
+	id := ctx.GetInt("id")
+	selectUser, err := repository.GetCartsByUserId(id)
 
 	if err != nil {
 		lib.HandlerNotfound(ctx, "Data not found")

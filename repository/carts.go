@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func FindAllCarts(id int) ([]models.Carts, error) {
+func FindAllCarts(id int) ([]models.CartsJoin, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
@@ -20,18 +20,22 @@ func FindAllCarts(id int) ([]models.Carts, error) {
 	// 	join users u on u.id = c.user_id
 	// 	where c.id = 1;`
 
-	sql := `SELECT * from carts WHERE "user_id" = $1`
+	sql := `SELECT carts.id, carts.transaction_detail_id, carts.quantity, product_variants.name as variant, product_sizes.name as size, products.title, products.price  FROM carts
+			INNER JOIN product_variants ON carts.variant_id = product_variants.id
+			INNER JOIN product_sizes ON carts.sizes_id = product_sizes.id
+			INNER JOIN products on carts.product_id = products.id
+			WHERE carts.user_id = $1`
 
 	query, err := db.Query(context.Background(), sql, id)
 
 	if err != nil {
-		return []models.Carts{}, err
+		return []models.CartsJoin{}, err
 	}
 
-	rows, err := pgx.CollectRows(query, pgx.RowToStructByPos[models.Carts])
+	rows, err := pgx.CollectRows(query, pgx.RowToStructByPos[models.CartsJoin])
 
 	if err != nil {
-		return []models.Carts{}, err
+		return []models.CartsJoin{}, err
 	}
 	fmt.Println(rows)
 
@@ -44,24 +48,26 @@ func CreateCarts(data models.Carts) (models.Carts, error) {
 	fmt.Println(data)
 	// fmt.Println(userId)
 
-	sql := `INSERT INTO carts ("quantity", "variant_id", "sizes_id", "product_id", "user_id") VALUES ($1, $2, $3, $4, $5) RETURNING "id", "quantity", "variant_id", "sizes_id", "product_id", "user_id"`
+	sql := `INSERT INTO carts ("transaction_detail_id", "quantity", "variant_id", "sizes_id", "product_id", "user_id") VALUES ($1, $2, $3, $4, $5, $6) RETURNING "id", "transaction_detail_id", "quantity", "variant_id", "sizes_id", "product_id", "user_id"`
 
 	// sql := `insert into carts "quantity" values $1 returning "id", "quantity", "variant_id", "sizes_id", "product_id", "user_id"`
 
-	row := db.QueryRow(context.Background(), sql, data.Quantity, data.VariantId, data.SizesProduct, data.ProductId, data.UserId)
+	row, _ := db.Query(context.Background(), sql, data.TransactionDetail, data.Quantity, data.VariantId, data.ProductSizeId, data.ProductId, data.UserId)
+	results, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Carts])
+	if err != nil {
+		fmt.Println(err)
+	}
 	// row, err := db.Query(context.Background(), sql, data.Quantity)
 
 	// if err != nil {
 	// 	return models.Carts{}, nil
 	// }
 
-	// results, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Carts])
-
 	// if err != nil {
 	// 	return models.Carts{}, nil
 	// }
 
-	var results models.Carts
+	// var results models.Carts
 
 	// Id           int `json:"id"`
 	// Quantity     int `json:"quantity"`
@@ -70,34 +76,36 @@ func CreateCarts(data models.Carts) (models.Carts, error) {
 	// ProductId    int `json:"productId" db:"product_id"`
 	// UserId       int `json:"userId" db:"user_id"`
 
-	row.Scan(
-		&results.Id,
-		&results.Quantity,
-		&results.VariantId,
-		&results.SizesProduct,
-		&results.ProductId,
-		&results.UserId,
-	)
+	// row.Scan(
+	// 	&results.Id,
+	// 	&results.TransactionDetail,
+	// 	&results.Quantity,
+	// 	&results.VariantId,
+	// 	&results.ProductSizeId,
+	// 	&results.ProductId,
+	// 	&results.UserId,
+	// )
+	fmt.Println("ini results")
 	fmt.Println(results)
 	return results, nil
 }
 
-func GetCartsById(id int) (models.Carts, error) {
+func GetCartsByUserId(id int) ([]models.Carts, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `SELECT * from carts WHERE id=$1`
+	sql := `SELECT * from carts WHERE user_id=$1`
 
 	query, err := db.Query(context.Background(), sql, id)
 
 	if err != nil {
-		return models.Carts{}, err
+		return []models.Carts{}, err
 	}
 
-	selectedRow, err := pgx.CollectOneRow(query, pgx.RowToStructByName[models.Carts])
+	selectedRow, err := pgx.CollectRows(query, pgx.RowToStructByName[models.Carts])
 
 	if err != nil {
-		return models.Carts{}, err
+		return []models.Carts{}, err
 	}
 
 	return selectedRow, err

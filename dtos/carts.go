@@ -1,8 +1,9 @@
 package dtos
 
 type FormCarts struct {
-	Quantity       int `json:"quantity" form:"quantity" binding:"required"`
-	VariantProduct int `json:"variantProduct" form:"variantProduct" binding:"required"`
-	SizesProduct   int `json:"sizesProduct" form:"sizesProduct" binding:"required"`
-	ProductId      int `json:"productId" form:"productId" binding:"required"`
+	TransactionDetail int `json:"transactionDetail" form:"transactionDetail"`
+	Quantity          int `json:"quantity" form:"quantity" binding:"required"`
+	Product           int `json:"product"`
+	Variant           int `json:"variant" form:"variant" binding:"required"`
+	ProductSize       int `json:"productSize" form:"productSize" binding:"required"`
 }

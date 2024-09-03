@@ -1,1 +1,1 @@
-INSERT INTO profile (full_name, user_id) VALUES ('admin', 2), ('user', 1);
+INSERT INTO profile (full_name, user_id) VALUES ('user', 2), ('admin', 1);

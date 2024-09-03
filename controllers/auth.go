@@ -70,3 +70,5 @@ func AuthRegister(c *gin.Context) {
 
 	lib.HandlerOK(c, "Register success", profile, nil)
 }
+
+// pull

@@ -183,22 +183,23 @@ func GetCategoryProductByCategoryId(c *gin.Context) {
 
 	lib.HandlerOK(c, "Detail Category Product", category, nil)
 }
-func ListProductsWithPagination(c *gin.Context) {
-	page, _ := strconv.Atoi(c.Query("page"))
-	limit, _ := strconv.Atoi(c.Query("limit"))
-	if page < 1 {
-		page = 1
-	}
-	if limit < 1 {
-		limit = 3
-	}
-	products, err := repository.GetAllProductsWithPagination(page, limit)
-	fmt.Println(err)
-	if err != nil {
-		lib.HandlerNotfound(c, "Products not found")
-		return
-	}
-	log.Println(products)
 
-	lib.HandlerOK(c, "List All Products", products, nil)
-}
+// func ListProductsWithPagination(c *gin.Context) {
+// 	page, _ := strconv.Atoi(c.Query("page"))
+// 	limit, _ := strconv.Atoi(c.Query("limit"))
+// 	if page < 1 {
+// 		page = 1
+// 	}
+// 	if limit < 1 {
+// 		limit = 3
+// 	}
+// 	products, err := repository.GetAllProductsWithPagination(page, limit)
+// 	fmt.Println(err)
+// 	if err != nil {
+// 		lib.HandlerNotfound(c, "Products not found")
+// 		return
+// 	}
+// 	log.Println(products)
+
+// 	lib.HandlerOK(c, "List All Products", products, nil)
+// }

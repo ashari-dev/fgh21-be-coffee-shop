@@ -154,7 +154,7 @@ func ListProductsWithPagination(c *gin.Context) {
 	if limit < 1 {
 		limit = 100
 	}
-	products, err := repository.GetAllProductsWithPagination(page, limit)
+	products, err := repository.GetAllOurProductsWithPagination(page, limit)
 	fmt.Println(err)
 	if err != nil {
 		lib.HandlerNotfound(c, "Products not found")

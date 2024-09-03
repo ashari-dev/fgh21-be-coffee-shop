@@ -42,18 +42,6 @@ func GetALLProfiles(c *gin.Context) {
 		prev = page - 1
 	}
 
-	// if err != nil {
-	// 	lib.HandlerBadReq(c, "Failed to get all profile")
-	// 	return
-	// }
-
-	// TotalData int  `json:"totalData"`
-	// TotalPage int  `json:"totalPage"`
-	// Page      int  `json:"page"`
-	// Limit     int  `json:"limit"`
-	// Next      *int `json:"next,omitempty"`
-	// Prev      *int `json:"prev,omitempty"`
-
 	lib.HandlerOK(c, "List All Profiles", profile, lib.PageInfo{
 		TotalData: count,
 		TotalPage: int(totalPage),
@@ -73,36 +61,6 @@ func CreateProfileJoinUser(c *gin.Context) {
 		return
 	}
 
-	// maxFile := 500 * 1024
-	// c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))
-
-	// file, err := c.FormFile("profileImg")
-	// if err != nil {
-	// 	if err.Error() == "http: request body too large" {
-	// 		lib.HandlerMaxFile(c, "file size too large, max capacity 500 kb")
-	// 		return
-	// 	}
-	// 	lib.HandlerBadReq(c, "not file to upload")
-	// 	return
-	// }
-
-	// allowExt := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
-	// fileExt := strings.ToLower(filepath.Ext(file.Filename))
-	// if !allowExt[fileExt] {
-	// 	lib.HandlerBadReq(c, "extension file not validate")
-	// 	return
-	// }
-
-	// newFile := uuid.New().String() + fileExt
-
-	// uploadDir := "./img/profile/"
-	// if err := c.SaveUploadedFile(file, uploadDir+newFile); err != nil {
-	// 	lib.HandlerBadReq(c, "upload failed")
-	// 	return
-	// }
-
-	// tes := "http://localhost:8000/img/profile/" + newFile
-
 	user, err := repository.CreateUser(models.Users{
 		Email:    inputUser.Email,
 		Password: inputUser.Password,
@@ -117,9 +75,8 @@ func CreateProfileJoinUser(c *gin.Context) {
 		FullName:    inputUser.FullName,
 		PhoneNumber: &inputUser.PhoneNumber,
 		Address:     &inputUser.Address,
-		// Image:       &tes,
-		Image:  &inputUser.Image,
-		UserId: user.Id,
+		Image:       &inputUser.Image,
+		UserId:      user.Id,
 	})
 	if err != nil {
 		lib.HandlerBadReq(c, "data not verified")
@@ -207,6 +164,8 @@ func DeleteProfile(c *gin.Context) {
 
 func UploadProfileImage(c *gin.Context) {
 	id := c.GetInt("UserId")
+	fmt.Println(id)
+
 	maxFile := 500 * 1024
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))
 
@@ -217,6 +176,10 @@ func UploadProfileImage(c *gin.Context) {
 			return
 		}
 		lib.HandlerBadReq(c, "not file to upload")
+		return
+	}
+	if id == 0 {
+		lib.HandlerBadReq(c, "User not found")
 		return
 	}
 
@@ -237,8 +200,6 @@ func UploadProfileImage(c *gin.Context) {
 
 	tes := "http://localhost:8000/img/profile/" + newFile
 
-	fmt.Println(tes)
-	fmt.Println(id)
 	profile, err := repository.UpdateProfileImage(models.Profile{Image: &tes}, id)
 	if err != nil {
 		lib.HandlerBadReq(c, "upload failed")

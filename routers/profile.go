@@ -8,12 +8,14 @@ import (
 )
 
 func ProfileRouters(rg *gin.RouterGroup) {
-	// rg.GET("/",middlewares.AuthMiddleware(), controllers.FindProfileById)
-	rg.PATCH("/", middlewares.AuthMiddleware(), controllers.UpdateProfile)
+	// rg.Use(middlewares.AuthMiddleware())
+	rg.GET("/login", middlewares.AuthMiddleware(), controllers.FindProfileById)
+	rg.PATCH("", middlewares.AuthMiddleware(), controllers.UpdateProfile)
 	rg.GET("", controllers.GetALLProfiles)
+	// rg.GET("", controllers.FindProfileById)
 	rg.POST("", controllers.CreateProfileJoinUser)
 	rg.PATCH("/:id", controllers.UpdateProfile)
 	rg.GET("/:id", controllers.FindProfileById)
 	rg.DELETE("/:id", controllers.DeleteProfile)
-	rg.PATCH("/img", middlewares.AuthMiddleware(), controllers.UploadProfileImage)
+	rg.PATCH("/img", controllers.UploadProfileImage)
 }

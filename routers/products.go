@@ -7,9 +7,13 @@ import (
 )
 
 func ProductsRouters(r *gin.RouterGroup) {
+
 	r.GET("", controllers.ListAllProducts)
 	r.POST("", controllers.CreateProduct)
 	r.GET("/", controllers.ListProductsWithPagination)
+	r.GET("/filter/", controllers.ListAllFilterProductsWithPagination)
+	r.GET("/our-product/", controllers.ListAllOurProductsWithPagination)
+	r.POST("", middlewares.AuthMiddleware(), controllers.CreateProduct)
 	r.GET("/:id", controllers.ListProductById)
 	r.PATCH("/:id", controllers.UpdateProduct)
 	r.DELETE("/:id", controllers.DeleteProduct)

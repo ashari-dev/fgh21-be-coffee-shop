@@ -9,7 +9,9 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+
 func GetAllProducts() ([]models.Product, error) {
+
 	db := lib.DB()
 	defer db.Close(context.Background())
 	// var offset int = (page - 1) * limit
@@ -40,33 +42,12 @@ func GetAllProducts() ([]models.Product, error) {
 
 	return products, err
 }
-func GetAllProductsWithPagination(page int, limit int) ([]models.Products, error) {
-	db := lib.DB()
-	defer db.Close(context.Background())
-	var offset int = (page - 1) * limit
-
-	sql := `SELECT * FROM products limit $1 offset $2`
-
-	rows, err := db.Query(context.Background(), sql, limit, offset)
-
-	if err != nil {
-		return []models.Products{}, err
-	}
-
-	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.Products])
-
-	if err != nil {
-		return []models.Products{}, err
-	}
-
-	return products, err
-}
 
 func AddNewProduct(data models.Products) (models.Products, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `INSERT into products ("title", "description", "price", "stock", "user_id") VALUES ($1, $2, $3, $4, $5) returning id, "title", "description", "price", "stock", "user_id"`
+	sql := `INSERT into products ("title", "description", "price", "stock", "user_id") VALUES ($1, $2, $3, $4, $5) returning "id", "title", "description", "price", "stock", "user_id"`
 
 	query, err := db.Query(context.Background(), sql, data.Title, data.Description, data.Price, data.Stock, data.UserId)
 
@@ -166,6 +147,51 @@ func RemoveTheProduct(data models.Products, id int) error {
 
 // 	return products, err
 // }
+
+func GetAllOurProductsWithPagination(page int, limit int) ([]models.JProducts, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	var offset int = (page - 1) * limit
+
+	sql := `SELECT "p"."id", "pi"."image", "p"."title", "p"."description", "p"."price" FROM "product_images" "pi"
+		INNER JOIN "products" "p"
+		on "pi"."product_id" = "p".id limit $1 offset $2`
+
+	rows, err := db.Query(context.Background(), sql, limit, offset)
+
+	if err != nil {
+		return []models.JProducts{}, err
+	}
+
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.JProducts])
+
+	if err != nil {
+		return []models.JProducts{}, err
+	}
+
+	return products, err
+}
+func GetAllProductsWithFilterPagination(title string, page int, limit int) ([]models.Products, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	var offset int = (page - 1) * limit
+
+	sql := `select * from "products" where "title" ilike $1 limit $2 offset $3`
+
+	rows, err := db.Query(context.Background(), sql, "%"+title+"%", limit, offset)
+
+	if err != nil {
+		return []models.Products{}, err
+	}
+
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.Products])
+
+	if err != nil {
+		return []models.Products{}, err
+	}
+
+	return products, err
+}
 
 // func FilterProduct(dt) {
 // 	db := lib.DB()

@@ -54,7 +54,7 @@ func GetALLProfiles(c *gin.Context) {
 	// Next      *int `json:"next,omitempty"`
 	// Prev      *int `json:"prev,omitempty"`
 
-	lib.HandlerOK(c, "List All Category", profile, lib.PageInfo{
+	lib.HandlerOK(c, "List All Profiles", profile, lib.PageInfo{
 		TotalData: count,
 		TotalPage: int(totalPage),
 		Page:      page,
@@ -130,8 +130,11 @@ func CreateProfileJoinUser(c *gin.Context) {
 }
 
 func FindProfileById(c *gin.Context) {
-	// id := c.GetInt("UserId")
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.GetInt("UserId")
+	if id == 0 {
+		id, _ = strconv.Atoi(c.Param("id"))
+	}
+
 	profile, err := repository.FindProfileById(id)
 	fmt.Println(id)
 
@@ -145,9 +148,10 @@ func FindProfileById(c *gin.Context) {
 
 func UpdateProfile(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	// id := c.GetInt("UserId")
+	if id == 0 {
+		id = c.GetInt("UserId")
+	}
 	form := dtos.ProfileJoinUser{}
-	// fmt.Println(form)
 
 	err := c.Bind(&form)
 
@@ -156,10 +160,20 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	repository.UpdateUserById(models.Users{
+	if form.Password == nil {
+		emptyPassword := ""
+		form.Password = &emptyPassword
+	}
+
+	user, err := repository.UpdateUserById(models.Users{
 		Email:    form.Email,
 		Password: *form.Password,
 	}, id)
+
+	if err != nil {
+		lib.HandlerBadReq(c, "Cannot update user")
+		return
+	}
 
 	updateProfile, err := repository.UpdateProfile(models.Profile{
 		FullName:    form.FullName,
@@ -171,6 +185,8 @@ func UpdateProfile(c *gin.Context) {
 		lib.HandlerBadReq(c, "Required to input data")
 		return
 	}
+
+	updateProfile.Email = user.Email
 
 	lib.HandlerOK(c, "Success update profile", updateProfile, nil)
 }

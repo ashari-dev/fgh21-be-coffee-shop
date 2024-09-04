@@ -193,26 +193,35 @@ func GetAllProductsWithFilterPagination(title string, page int, limit int) ([]mo
 	return products, err
 }
 
-func GetAllProductsWithFilterPrice(lowPrice int, highPrice int, page int, limit int) ([]models.JProducts, error) {
+func GetAllProductsWithFilterPrice(lowPrice int, highPrice int, name string, title string, page int, limit int) ([]models.JPriceProducts, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 	var offset int = (page - 1) * limit
 
-	sql := `SELECT "p"."id", "pi"."image", "p"."title", "p"."description", "p"."price" FROM "product_images" "pi"
+	sql := `SELECT "p"."id", "pi"."image", "p"."title", "p"."description", "p"."price", "c"."name"
+		FROM "category_products" "cp"
 		INNER JOIN "products" "p"
-		on "pi"."product_id" = "p".id 
-		WHERE "price" >= $1 AND "price" <= $2 LIMIT $3 offset $4`
+		on "p"."id" = "cp"."product_id"
+		INNER JOIN "categories" "c"
+		on "c"."id" = "cp"."category_id"
+		INNER JOIN "product_images" "pi"
+		on "pi"."product_id" = "p"."id"
+		WHERE "price" >= $2
+        AND "price" <= $3
+        AND "name" = $4
+        AND "title" ILIKE $1
+        LIMIT $5 offset $6`
 
-	rows, err := db.Query(context.Background(), sql, lowPrice, highPrice, limit, offset)
+	rows, err := db.Query(context.Background(), sql, "%"+title+"%", lowPrice, highPrice, name, limit, offset)
 
 	if err != nil {
-		return []models.JProducts{}, err
+		return []models.JPriceProducts{}, err
 	}
 
-	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.JProducts])
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.JPriceProducts])
 
 	if err != nil {
-		return []models.JProducts{}, err
+		return []models.JPriceProducts{}, err
 	}
 
 	return products, err

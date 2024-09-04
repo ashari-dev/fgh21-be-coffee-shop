@@ -228,27 +228,22 @@ func ListAllFilterProductsWithPagination(c *gin.Context) {
 func ListAllFilterProductsWithPrice(c *gin.Context) {
 	lowPrice, _ := strconv.Atoi(c.Query("lowPrice"))
 	highPrice, _ := strconv.Atoi(c.Query("highPrice"))
+	name := c.Query("name")
+	title := c.Query("title")
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
-	if lowPrice < 1 {
-		lowPrice = 0
-	}
-	if highPrice < 1 {
-		highPrice = 10000000
-	}
 	if page < 1 {
 		page = 1
 	}
 	if limit < 1 {
 		limit = 100
 	}
-	products, err := repository.GetAllProductsWithFilterPrice(lowPrice, highPrice, page, limit)
-	fmt.Println(err)
+	products, err := repository.GetAllProductsWithFilterPrice(lowPrice, highPrice, name, title, page, limit)
 	if err != nil {
 		lib.HandlerNotfound(c, "Products not found")
 		return
 	}
-	log.Println(products)
+	fmt.Println(products)
 
 	lib.HandlerOK(c, "List Filter Products Price", products, nil)
 }

@@ -193,6 +193,31 @@ func GetAllProductsWithFilterPagination(title string, page int, limit int) ([]mo
 	return products, err
 }
 
+func GetAllProductsWithFilterPrice(lowPrice int, highPrice int, page int, limit int) ([]models.JProducts, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	var offset int = (page - 1) * limit
+
+	sql := `SELECT "p"."id", "pi"."image", "p"."title", "p"."description", "p"."price" FROM "product_images" "pi"
+		INNER JOIN "products" "p"
+		on "pi"."product_id" = "p".id 
+		WHERE "price" >= $1 AND "price" <= $2 LIMIT $3 offset $4`
+
+	rows, err := db.Query(context.Background(), sql, lowPrice, highPrice, limit, offset)
+
+	if err != nil {
+		return []models.JProducts{}, err
+	}
+
+	products, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.JProducts])
+
+	if err != nil {
+		return []models.JProducts{}, err
+	}
+
+	return products, err
+}
+
 // func FilterProduct(dt) {
 // 	db := lib.DB()
 // 	defer db.Close(context.Background())

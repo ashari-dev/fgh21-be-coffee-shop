@@ -12,6 +12,7 @@ func ProductsRouters(r *gin.RouterGroup) {
 
 	r.GET("/", controllers.ListProductsWithPagination)
 	r.GET("/filter/", controllers.ListAllFilterProductsWithPagination)
+	r.GET("/filter/price", controllers.ListAllFilterProductsWithPrice)
 	r.GET("/our-product/", controllers.ListAllOurProductsWithPagination)
 	r.POST("", middlewares.AuthMiddleware(), controllers.CreateProduct)
 	r.GET("/:id", controllers.ListProductById)

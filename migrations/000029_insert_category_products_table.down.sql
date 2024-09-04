@@ -1,0 +1,1 @@
+TRUNCATE table "category_products"

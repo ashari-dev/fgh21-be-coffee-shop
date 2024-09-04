@@ -12,4 +12,5 @@ func UserRouters(rg *gin.RouterGroup) {
 	rg.GET("/:id", controllers.GetUserById)
 	rg.PATCH("/:id", controllers.UpdateUserById)
 	rg.DELETE("/:id", controllers.DeleteUserById)
+	rg.POST("/insertuser", controllers.CreateUserWithProfile)
 }

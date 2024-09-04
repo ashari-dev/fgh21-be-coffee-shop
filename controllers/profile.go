@@ -164,7 +164,6 @@ func DeleteProfile(c *gin.Context) {
 
 func UploadProfileImage(c *gin.Context) {
 	id := c.GetInt("UserId")
-	fmt.Println(id)
 
 	maxFile := 500 * 1024
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))

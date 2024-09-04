@@ -227,3 +227,22 @@ func ListAllFilterProductsWithPrice(c *gin.Context) {
 
 	lib.HandlerOK(c, "List Filter Products Price", products, nil)
 }
+
+func UploadProductImage(c *gin.Context) {
+	form, err := c.MultipartForm()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	files := form.File["upload[]"]
+
+	for _, item := range files {
+		err := c.SaveUploadedFile(item, "./img/product/"+item.Filename)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
+
+	lib.HandlerOK(c, "data upload", nil, nil)
+}

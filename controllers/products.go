@@ -184,7 +184,6 @@ func ListAllOurProductsWithPagination(c *gin.Context) {
 	lib.HandlerOK(c, "List All Products", products, nil)
 }
 
-
 func ListAllFilterProductsWithPagination(c *gin.Context) {
 	title := c.Query("title")
 	page, _ := strconv.Atoi(c.Query("page"))
@@ -205,7 +204,6 @@ func ListAllFilterProductsWithPagination(c *gin.Context) {
 
 	lib.HandlerOK(c, "List Filter Products", products, nil)
 }
-
 
 func ListAllFilterProductsWithPrice(c *gin.Context) {
 	lowPrice, _ := strconv.Atoi(c.Query("lowPrice"))

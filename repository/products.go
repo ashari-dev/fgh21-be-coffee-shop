@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-
 func GetAllProducts() ([]models.Product, error) {
 
 	db := lib.DB()

@@ -128,3 +128,26 @@ func CreateTransaction(c *gin.Context) {
 
 	lib.HandlerOK(c, "transaction success", data, nil)
 }
+
+func UpdateTransactionStatus(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	var form dtos.FormTransaction
+
+	err := c.Bind(&form)
+
+	if err != nil {
+		lib.HandlerBadReq(c, "Required to input data")
+		return
+	}
+
+	update, err := repository.EditTransactionStatus(models.Transaction{
+		TransactionStatusId: form.TransactionStatus,
+	}, id)
+
+	if err != nil {
+		lib.HandlerBadReq(c, "Required to input data")
+		return
+	}
+
+	lib.HandlerOK(c, "Success edit product by order type", update, nil)
+}

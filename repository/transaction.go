@@ -5,6 +5,7 @@ import (
 	"RGT/konis/models"
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -33,4 +34,25 @@ func CreateTransaction(data models.Transaction) (models.Transaction, error) {
 	}
 
 	return transaction, err
+}
+func EditTransactionStatus(data models.Transaction, id int) (models.Transaction, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `UPDATE transactions SET "transaction_status_id"=$1 WHERE id=$2 returning *`
+
+	query := db.QueryRow(context.Background(), sql, data.TransactionStatusId ,id)
+
+	var result models.Transaction
+	err := query.Scan(
+		&result.Id,
+		&result.TransactionStatusId,
+	)
+	
+	if err != nil {
+		log.Println(err)
+		return models.Transaction{}, err
+	}
+
+	return result, err
 }

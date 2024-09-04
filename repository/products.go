@@ -238,3 +238,26 @@ func GetAllProductsWithFilterPrice(lowPrice int, highPrice int, page int, limit 
 
 // 	return selectedRow, err
 // }
+func GetIdOurProductsWithPagination(id int) (models.JProducts, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `SELECT "p"."id", "pi"."image", "p"."title", "p"."description", "p"."price" FROM "product_images" "pi"
+		INNER JOIN "products" "p"
+		on "pi"."product_id" = "p".id
+        WHERE p.id = $1`
+fmt.Println()
+	rows, err := db.Query(context.Background(), sql,id)
+
+	fmt.Println(err)
+	if err != nil {
+		return models.JProducts{}, err
+	}
+	
+	products, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[models.JProducts])
+	if err != nil {
+		return models.JProducts{}, err
+	}
+
+	return products, err
+}

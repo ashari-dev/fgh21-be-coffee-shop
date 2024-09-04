@@ -14,6 +14,7 @@ func ProductsRouters(r *gin.RouterGroup) {
 	r.GET("/filter/", controllers.ListAllFilterProductsWithPagination)
 	r.GET("/filter/price", controllers.ListAllFilterProductsWithPrice)
 	r.GET("/our-product/", controllers.ListAllOurProductsWithPagination)
+	r.GET("/our-product/:id", controllers.ListIdOurProductsWithPagination)
 	r.POST("", middlewares.AuthMiddleware(), controllers.CreateProduct)
 	r.GET("/:id", controllers.ListProductById)
 	r.PATCH("/:id", controllers.UpdateProduct)

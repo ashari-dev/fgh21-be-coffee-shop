@@ -18,4 +18,5 @@ type TransactionJoin struct {
 	Quantity   int
 	Price      int
 	OrderTypes string
+	Image string
 }

@@ -38,14 +38,15 @@ func FindTransactionDetailById(id int) (models.TransactionDetailJoin, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `SELECT  transactions.no_order, transactions.add_full_name, transactions.add_address, transactions.payment , transaction_status.name AS transaction_status, transaction_details.quantity, products.price, order_types.name AS order_type, profile.phone_number
+	sql := `SELECT  transactions.no_order, transactions.add_full_name, transactions.add_address, transactions.payment , transaction_status.name AS transaction_status, transaction_details.quantity, products.price, order_types.name AS order_type, profile.phone_number ,product_images.image
 	FROM transaction_details
 	INNER JOIN transactions ON transactions.transaction_detail_id = transaction_details.id
 	INNER JOIN transaction_status on transactions.transaction_status_id = transaction_status.id
 	INNER JOIN order_types on transactions.order_type_id = order_types.id
 	INNER JOIN profile on transactions.user_id = profile.user_id
 	INNER JOIN products on transaction_details.product_id = products.id
-    WHERE no_order = $1	
+	INNER JOIN product_images on product_images.product_id  = products.id
+    WHERE no_order = $1
 	`
 
 	row, err := db.Query(context.Background(), sql, id)
@@ -102,10 +103,11 @@ func FindTransactionByUserId(id int) ([]models.TransactionJoin, error) {
 	defer db.Close(context.Background())
 
 	sql := `
-		SELECT transactions.no_order, transaction_details.quantity, products.price, transaction_status.name as order_type  FROM transactions
+		SELECT transactions.no_order, transaction_details.quantity, products.price, transaction_status.name as order_type,image  FROM transactions
 		INNER JOIN transaction_details ON transactions.transaction_detail_id = transaction_details.id
 		INNER JOIN products ON transaction_details.id = products.id
 		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
+		INNER JOIN product_images ON  product_images.product_id  = products.id
 		WHERE transactions.user_id = $1
 	`
 

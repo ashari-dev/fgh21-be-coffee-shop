@@ -9,6 +9,6 @@ import (
 
 func CartsRouters(rg *gin.RouterGroup) {
 	rg.GET("", middlewares.AuthMiddleware(), controllers.ListAllCarts)
-	rg.DELETE("/:id", controllers.DeleteOneCarts)
+	rg.DELETE("", middlewares.AuthMiddleware(), controllers.DeleteCartsByUserId)
 	rg.POST("/:id", middlewares.AuthMiddleware(), controllers.CreateOneCarts)
 }

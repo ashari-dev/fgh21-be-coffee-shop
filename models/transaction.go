@@ -20,3 +20,11 @@ type TransactionJoin struct {
 	Quantity   []int
 	Price      []int
 }
+
+type AllTransactionForAdmin struct {
+	NoOrder     int    `json:"noOrder" db:"no_order"`
+	Quantity    int    `json:"quantity" db:"quantity"`
+	Price       int    `json:"price" db:"price"`
+	Title       string `json:"title" db:"title"`
+	OrderStatus string `json:"orderStatus" db:"order_status"`
+}

@@ -116,10 +116,10 @@ func CreateTransaction(c *gin.Context) {
 		})
 	}
 	fmt.Println(err)
-	if err != nil {
-		lib.HandlerBadReq(c, "Invalid Data")
-		return
-	}
+	// if err != nil {
+	// 	lib.HandlerBadReq(c, "Invalid Data")
+	// 	return
+	// }
 
 	lib.HandlerOK(c, "transaction success", nil, nil)
 }

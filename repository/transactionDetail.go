@@ -38,7 +38,6 @@ func FindTransactionDetailById(id int) (models.TransactionDetailJoin, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-
 	sql := `SELECT  transactions.no_order, transactions.add_full_name, transactions.add_address, transactions.payment , transaction_status.name AS transaction_status, transaction_details.quantity, products.price, order_types.name AS order_type, profile.phone_number ,product_images.image
 	FROM transaction_details
 	INNER JOIN transactions ON transactions.transaction_detail_id = transaction_details.id
@@ -107,13 +106,12 @@ func FindTransactionByUserId(id int) ([]models.TransactionJoin, error) {
 	defer db.Close(context.Background())
 
 	sql := `
-		SELECT transactions.no_order, transaction_details.quantity, products.price, transaction_status.name as order_type,image  FROM transactions
-// 		SELECT transactions.no_order, transaction_status.name as order_type, array_agg(transaction_details.quantity) as quantity, array_agg(products.price) as price  FROM transactions
+		SELECT transactions.no_order, transaction_status.name as order_type, array_agg(transaction_details.quantity) as quantity, array_agg(products.price) as price  FROM transactions
 		INNER JOIN transaction_details ON transactions.transaction_detail_id = transaction_details.id
 		INNER JOIN products ON transaction_details.id = products.id
 		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
 		INNER JOIN product_images ON  product_images.product_id  = products.id
-		WHERE transactions.user_id = $1
+		WHERE transactions.user_id = 1
     GROUP BY transactions.no_order, transaction_status.name
 	`
 

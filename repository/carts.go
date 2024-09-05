@@ -20,10 +20,11 @@ func FindAllCarts(id int) ([]models.CartsJoin, error) {
 	// 	join users u on u.id = c.user_id
 	// 	where c.id = 1;`
 
-	sql := `SELECT carts.id, carts.transaction_detail_id, carts.quantity, product_variants.name as variant, product_sizes.name as size, products.title, products.price  FROM carts
+	sql := `SELECT carts.id, carts.transaction_detail_id, carts.quantity, product_variants.name as variant, product_sizes.name as size, products.title, products.price ,image  FROM carts
 			INNER JOIN product_variants ON carts.variant_id = product_variants.id
 			INNER JOIN product_sizes ON carts.sizes_id = product_sizes.id
 			INNER JOIN products on carts.product_id = products.id
+			INNER JOIN product_images on product_images.product_id  = products.id
 			WHERE carts.user_id = $1`
 
 	query, err := db.Query(context.Background(), sql, id)
@@ -94,7 +95,7 @@ func GetCartsByUserId(id int) ([]models.Carts, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `SELECT * from carts WHERE user_id=$1`
+	sql := `SELECT * from carts WHERE user_id = $1`
 
 	query, err := db.Query(context.Background(), sql, id)
 
@@ -114,16 +115,13 @@ func GetCartsByUserId(id int) ([]models.Carts, error) {
 func DeleteCarts(data models.Carts, id int) error {
 	db := lib.DB()
 	defer db.Close(context.Background())
+	fmt.Println(id)
+	sql := `DELETE FROM carts WHERE user_id=$1`
 
-	sql := `DELETE FROM carts WHERE id=$1`
+	_, err := db.Exec(context.Background(), sql, id)
 
-	query, _ := db.Exec(context.Background(), sql, id)
-
-	// if err != nil {
-	// 	// return fmt.Errorf("Failed to delete product")
-	// }
-	if query.RowsAffected() == 0 {
-		return fmt.Errorf("data not found")
+	if err != nil {
+		return err
 	}
 
 	return nil

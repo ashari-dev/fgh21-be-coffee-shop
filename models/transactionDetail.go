@@ -24,8 +24,9 @@ type TransactionDetailJoin struct {
 	Address           string  `json:"address"`
 	Payment           string  `json:"payment"`
 	TransactionStatus string  `json:"transactionStatus"`
-	Quantity          int     `json:"quantity"`
-	Price             int     `json:"price"`
+	Quantity          []int   `json:"quantity"`
+	Price             []int   `json:"price"`
 	OrderType         string  `json:"orderType"`
 	PhoneNumber       *string `json:"phoneNumber"`
+	Image string `json:"image"`
 }

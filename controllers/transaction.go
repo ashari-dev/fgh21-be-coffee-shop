@@ -49,14 +49,6 @@ func GetTransactionProductById(c *gin.Context) {
 	lib.HandlerOK(c, "Get Transaction Detail by Id", data, nil)
 }
 
-// SELECT no_order, products.title, transaction_details.quantity, product_variants.name, product_sizes.name, order_types.name, products.price
-// FROM transactions
-// INNER JOIN transaction_details on transactions.transaction_detail_id = transaction_details.id
-// INNER JOIN products on transaction_details.product_id = products.id
-// INNER JOIN product_sizes on transaction_details.product_size_id = product_sizes.id
-// INNER JOIN product_variants on transaction_details.variant_id = product_variants.id
-// INNER JOIN order_types on transactions.order_type_id = order_types.id
-
 func GetAllTransactionByUserId(c *gin.Context) {
 	id := c.GetInt("UserId")
 	fmt.Println(id)
@@ -68,7 +60,7 @@ func GetAllTransactionByUserId(c *gin.Context) {
 		lib.HandlerBadReq(c, "Transaction not found")
 		return
 	}
-	lib.HandlerOK(c, "Get Transaction Detail by User Id", data, nil)
+	lib.HandlerOK(c, "Get Transaction by User Id", data, nil)
 }
 
 func CreateTransactionDetails(c *gin.Context) {
@@ -110,25 +102,28 @@ func CreateTransaction(c *gin.Context) {
 	}
 	fmt.Println(userId)
 	noOrder := rand.Intn(90000) + 10000
-	data, err := repository.CreateTransaction(models.Transaction{
-		NoOrder:             noOrder,
-		AddFullName:         formTransaction.FullName,
-		AddEmail:            formTransaction.Email,
-		AddAddress:          formTransaction.Address,
-		Payment:             formTransaction.Payment,
-		UserId:              userId,
-		TransactionDetail:   formTransaction.TransactionDetail,
-		OrderTypeId:         formTransaction.OrderType,
-		TransactionStatusId: formTransaction.TransactionStatus,
-	})
+	for i := range formTransaction.TransactionDetail {
+		repository.CreateTransaction(models.Transaction{
+			NoOrder:             noOrder,
+			AddFullName:         formTransaction.FullName,
+			AddEmail:            formTransaction.Email,
+			AddAddress:          formTransaction.Address,
+			Payment:             formTransaction.Payment,
+			UserId:              userId,
+			TransactionDetail:   formTransaction.TransactionDetail[i],
+			OrderTypeId:         formTransaction.OrderType,
+			TransactionStatusId: formTransaction.TransactionStatus,
+		})
+	}
 	fmt.Println(err)
 	if err != nil {
 		lib.HandlerBadReq(c, "Invalid Data")
 		return
 	}
 
-	lib.HandlerOK(c, "transaction success", data, nil)
+	lib.HandlerOK(c, "transaction success", nil, nil)
 }
+
 
 func GetALLTransactions(c *gin.Context) {
 	search := c.Query("search")
@@ -202,4 +197,27 @@ func GetALLTransactionsByStatusId(c *gin.Context) {
 		Next:      &next,
 		Prev:      &prev,
 	})
+}
+
+func UpdateTransactionStatus(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	var form dtos.FormTransaction
+
+	err := c.Bind(&form)
+
+	if err != nil {
+		lib.HandlerBadReq(c, "Required to input data")
+		return
+	}
+
+	update, err := repository.EditTransactionStatus(models.Transaction{
+		TransactionStatusId: form.TransactionStatus,
+	}, id)
+
+	if err != nil {
+		lib.HandlerBadReq(c, "Required to input data")
+		return
+	}
+
+	lib.HandlerOK(c, "Success edit product by order type", update, nil)
 }

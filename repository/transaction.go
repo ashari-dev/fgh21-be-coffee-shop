@@ -34,3 +34,91 @@ func CreateTransaction(data models.Transaction) (models.Transaction, error) {
 
 	return transaction, err
 }
+
+func FindAllTransactions(search string, page int, limit int) ([]models.AllTransactionForAdmin, int) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	offset := 0
+	if page > 1 {
+		offset = (page - 1) * limit
+	}
+
+	sql := `SELECT transactions.no_order, transaction_details.quantity, products.price, products.title, transaction_status.name as order_status  FROM transactions
+		INNER JOIN transaction_details ON transaction_details.id = transactions.id
+		INNER JOIN products ON transaction_details.id = products.id
+		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
+		WHERE products.title ilike '%' || $1 || '%'
+		limit $2 offset $3`
+
+	rows, _ := db.Query(context.Background(),
+		sql, search, limit, offset,
+	)
+	count := TotalTransactions(search)
+
+	transaction, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.AllTransactionForAdmin])
+	if err != nil {
+		return []models.AllTransactionForAdmin{}, count
+	}
+
+	return transaction, count
+}
+
+func TotalTransactions(search string) int {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	inputSQL := `select count(no_order) as "total" FROM transactions
+		INNER JOIN transaction_details ON transaction_details.id = transactions.id
+		INNER JOIN products ON transaction_details.id = products.id
+		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
+		WHERE products.title ilike '%' || $1 || '%'`
+	rows := db.QueryRow(context.Background(), inputSQL, search)
+	var result int
+	rows.Scan(
+		&result,
+	)
+	return result
+}
+
+func FindTransactionsByStatusId(search int, page int, limit int) ([]models.AllTransactionForAdmin, int) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	offset := 0
+	if page > 1 {
+		offset = (page - 1) * limit
+	}
+
+	sql := `SELECT transactions.no_order, transaction_details.quantity, products.price, products.title, transaction_status.name as order_status  FROM transactions
+		INNER JOIN transaction_details ON transaction_details.id = transactions.id
+		INNER JOIN products ON transaction_details.id = products.id
+		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
+		WHERE transaction_status_id = $1
+		limit $2 offset $3`
+
+	rows, _ := db.Query(context.Background(),
+		sql, search, limit, offset,
+	)
+	count := TotalTransactionsByStatusId(search)
+
+	transaction, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.AllTransactionForAdmin])
+	if err != nil {
+		return []models.AllTransactionForAdmin{}, count
+	}
+
+	return transaction, count
+}
+
+func TotalTransactionsByStatusId(search int) int {
+	db := lib.DB()
+	defer db.Close(context.Background())
+	inputSQL := `select count(no_order) as "total" FROM transactions
+		INNER JOIN transaction_details ON transaction_details.id = transactions.id
+		INNER JOIN products ON transaction_details.id = products.id
+		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
+		WHERE transaction_status_id = $1`
+	rows := db.QueryRow(context.Background(), inputSQL, search)
+	var result int
+	rows.Scan(
+		&result,
+	)
+	return result
+}

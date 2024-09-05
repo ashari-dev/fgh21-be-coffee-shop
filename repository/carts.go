@@ -95,7 +95,7 @@ func GetCartsByUserId(id int) ([]models.Carts, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `SELECT * from carts WHERE user_id=$1`
+	sql := `SELECT * from carts WHERE user_id = $1`
 
 	query, err := db.Query(context.Background(), sql, id)
 
@@ -115,16 +115,13 @@ func GetCartsByUserId(id int) ([]models.Carts, error) {
 func DeleteCarts(data models.Carts, id int) error {
 	db := lib.DB()
 	defer db.Close(context.Background())
+	fmt.Println(id)
+	sql := `DELETE FROM carts WHERE user_id=$1`
 
-	sql := `DELETE FROM carts WHERE id=$1`
+	_, err := db.Exec(context.Background(), sql, id)
 
-	query, _ := db.Exec(context.Background(), sql, id)
-
-	// if err != nil {
-	// 	// return fmt.Errorf("Failed to delete product")
-	// }
-	if query.RowsAffected() == 0 {
-		return fmt.Errorf("data not found")
+	if err != nil {
+		return err
 	}
 
 	return nil

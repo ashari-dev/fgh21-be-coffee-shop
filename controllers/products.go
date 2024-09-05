@@ -184,7 +184,6 @@ func ListAllOurProductsWithPagination(c *gin.Context) {
 	lib.HandlerOK(c, "List All Products", products, nil)
 }
 
-
 func ListAllFilterProductsWithPagination(c *gin.Context) {
 	title := c.Query("title")
 	page, _ := strconv.Atoi(c.Query("page"))
@@ -206,34 +205,29 @@ func ListAllFilterProductsWithPagination(c *gin.Context) {
 	lib.HandlerOK(c, "List Filter Products", products, nil)
 }
 
-
 func ListAllFilterProductsWithPrice(c *gin.Context) {
 	lowPrice, _ := strconv.Atoi(c.Query("lowPrice"))
 	highPrice, _ := strconv.Atoi(c.Query("highPrice"))
+	name := c.Query("name")
+	title := c.Query("title")
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
-	if lowPrice < 1 {
-		lowPrice = 0
-	}
-	if highPrice < 1 {
-		highPrice = 10000000
-	}
 	if page < 1 {
 		page = 1
 	}
 	if limit < 1 {
 		limit = 100
 	}
-	products, err := repository.GetAllProductsWithFilterPrice(lowPrice, highPrice, page, limit)
-	fmt.Println(err)
+	products, err := repository.GetAllProductsWithFilterPrice(lowPrice, highPrice, name, title, page, limit)
 	if err != nil {
 		lib.HandlerNotfound(c, "Products not found")
 		return
 	}
-	log.Println(products)
+	fmt.Println(products)
 
 	lib.HandlerOK(c, "List Filter Products Price", products, nil)
 }
+
 
 func ListIdOurProductsWithPagination(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
@@ -244,5 +238,24 @@ func ListIdOurProductsWithPagination(c *gin.Context) {
 			return
 	}
 		
-			lib.HandlerOK(c, "List All Products", products, nil)
+		lib.HandlerOK(c, "List All Products", products, nil)
+}
+
+func UploadProductImage(c *gin.Context) {
+	form, err := c.MultipartForm()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	files := form.File["upload[]"]
+
+	for _, item := range files {
+		err := c.SaveUploadedFile(item, "./img/product/"+item.Filename)
+		if err != nil {
+			log.Println(err)
+			return
 		}
+	}
+
+	lib.HandlerOK(c, "data upload", nil, nil)
+}

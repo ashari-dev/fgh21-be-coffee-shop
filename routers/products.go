@@ -9,7 +9,6 @@ import (
 
 func ProductsRouters(r *gin.RouterGroup) {
 
-
 	r.GET("/", controllers.ListProductsWithPagination)
 	r.GET("/filter/", controllers.ListAllFilterProductsWithPagination)
 	r.GET("/filter/price", controllers.ListAllFilterProductsWithPrice)
@@ -25,5 +24,6 @@ func ProductsRouters(r *gin.RouterGroup) {
 	r.GET("/variant/:id", controllers.ListProductVariantById)
 	r.GET("/categoryproducts/", controllers.ListAllCategoryProduct)
 	r.GET("/categoryproducts/:id", controllers.GetCategoryProductByCategoryId)
+	r.POST("/upload/img", controllers.UploadProductImage)
 
 }

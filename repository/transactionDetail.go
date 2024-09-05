@@ -38,6 +38,7 @@ func FindTransactionDetailById(id int) (models.TransactionDetailJoin, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
+
 	sql := `SELECT  transactions.no_order, transactions.add_full_name, transactions.add_address, transactions.payment , transaction_status.name AS transaction_status, transaction_details.quantity, products.price, order_types.name AS order_type, profile.phone_number ,product_images.image
 	FROM transaction_details
 	INNER JOIN transactions ON transactions.transaction_detail_id = transaction_details.id
@@ -46,7 +47,10 @@ func FindTransactionDetailById(id int) (models.TransactionDetailJoin, error) {
 	INNER JOIN profile on transactions.user_id = profile.user_id
 	INNER JOIN products on transaction_details.product_id = products.id
 	INNER JOIN product_images on product_images.product_id  = products.id
-    WHERE no_order = $1
+  WHERE no_order = $1
+//     WHERE no_order = $1
+//     GROUP BY transactions.no_order, transactions.add_full_name, transactions.add_address, transactions.payment , transaction_status.name, order_types.name, profile.phone_number LIMIT 100
+
 	`
 
 	row, err := db.Query(context.Background(), sql, id)
@@ -66,7 +70,7 @@ func FindTransactionDetailById(id int) (models.TransactionDetailJoin, error) {
 	return transaction, nil
 }
 
-func FindTransactionProductById(id int) (models.TransactionProduct, error) {
+func FindTransactionProductById(id int) ([]models.TransactionProduct, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
@@ -86,13 +90,13 @@ func FindTransactionProductById(id int) (models.TransactionProduct, error) {
 	fmt.Println(err)
 
 	if err != nil {
-		return models.TransactionProduct{}, err
+		return []models.TransactionProduct{}, err
 	}
 
-	transaction, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.TransactionProduct])
+	transaction, err := pgx.CollectRows(row, pgx.RowToStructByPos[models.TransactionProduct])
 
 	if err != nil {
-		return models.TransactionProduct{}, err
+		return []models.TransactionProduct{}, err
 	}
 
 	return transaction, nil
@@ -104,11 +108,13 @@ func FindTransactionByUserId(id int) ([]models.TransactionJoin, error) {
 
 	sql := `
 		SELECT transactions.no_order, transaction_details.quantity, products.price, transaction_status.name as order_type,image  FROM transactions
+// 		SELECT transactions.no_order, transaction_status.name as order_type, array_agg(transaction_details.quantity) as quantity, array_agg(products.price) as price  FROM transactions
 		INNER JOIN transaction_details ON transactions.transaction_detail_id = transaction_details.id
 		INNER JOIN products ON transaction_details.id = products.id
 		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
 		INNER JOIN product_images ON  product_images.product_id  = products.id
 		WHERE transactions.user_id = $1
+    GROUP BY transactions.no_order, transaction_status.name
 	`
 
 	row, err := db.Query(context.Background(), sql, id)

@@ -12,7 +12,7 @@ type FormTransaction struct {
 	Email             string `json:"email" form:"email"`
 	Address           string `json:"address" form:"address"`
 	Payment           string `json:"payment" form:"payment"`
-	TransactionDetail int    `json:"transactionDetail" form:"transactionDetail"`
+	TransactionDetail []int  `json:"transactionDetail" form:"transactionDetail"`
 	OrderType         int    `json:"orderType" form:"orderType"`
 	TransactionStatus int    `json:"transactionStatus" form:"transactionStatus"`
 }

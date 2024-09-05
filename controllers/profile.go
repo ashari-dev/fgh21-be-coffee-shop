@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -164,7 +165,6 @@ func DeleteProfile(c *gin.Context) {
 
 func UploadProfileImage(c *gin.Context) {
 	id := c.GetInt("UserId")
-	fmt.Println(id)
 
 	maxFile := 500 * 1024
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))
@@ -199,6 +199,12 @@ func UploadProfileImage(c *gin.Context) {
 	}
 
 	tes := "http://localhost:8000/img/profile/" + newFile
+
+	delImgBefore, _ := repository.FindProfileById(id)
+	if delImgBefore.Image != nil {
+		fileDel := strings.Split(*delImgBefore.Image, "8000")[1]
+		os.Remove("." + fileDel)
+	}
 
 	profile, err := repository.UpdateProfileImage(models.Profile{Image: &tes}, id)
 	if err != nil {

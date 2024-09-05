@@ -16,6 +16,7 @@ type Transaction struct {
 type TransactionJoin struct {
 	NoOrder    int
 	OrderTypes string
+	Image string
 	Quantity   []int
 	Price      []int
 }

@@ -28,4 +28,5 @@ type TransactionDetailJoin struct {
 	Price             []int   `json:"price"`
 	OrderType         string  `json:"orderType"`
 	PhoneNumber       *string `json:"phoneNumber"`
+	Image string `json:"image"`
 }

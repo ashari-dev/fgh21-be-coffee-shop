@@ -20,10 +20,11 @@ func FindAllCarts(id int) ([]models.CartsJoin, error) {
 	// 	join users u on u.id = c.user_id
 	// 	where c.id = 1;`
 
-	sql := `SELECT carts.id, carts.transaction_detail_id, carts.quantity, product_variants.name as variant, product_sizes.name as size, products.title, products.price  FROM carts
+	sql := `SELECT carts.id, carts.transaction_detail_id, carts.quantity, product_variants.name as variant, product_sizes.name as size, products.title, products.price ,image  FROM carts
 			INNER JOIN product_variants ON carts.variant_id = product_variants.id
 			INNER JOIN product_sizes ON carts.sizes_id = product_sizes.id
 			INNER JOIN products on carts.product_id = products.id
+			INNER JOIN product_images on product_images.product_id  = products.id
 			WHERE carts.user_id = $1`
 
 	query, err := db.Query(context.Background(), sql, id)

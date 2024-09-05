@@ -17,4 +17,5 @@ type CartsJoin struct {
 	Size              string `json:"size"`
 	Title             string `json:"title"`
 	Price             int    `json:"price"`
+	Image 			  string `json:"image"`
 }

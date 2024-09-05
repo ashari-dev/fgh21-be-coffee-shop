@@ -228,6 +228,19 @@ func ListAllFilterProductsWithPrice(c *gin.Context) {
 	lib.HandlerOK(c, "List Filter Products Price", products, nil)
 }
 
+
+func ListIdOurProductsWithPagination(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	products, err := repository.GetIdOurProductsWithPagination(id)
+	fmt.Println(err)
+	if err != nil {
+			lib.HandlerNotfound(c, "Products not found")
+			return
+	}
+		
+		lib.HandlerOK(c, "List All Products", products, nil)
+}
+
 func UploadProductImage(c *gin.Context) {
 	form, err := c.MultipartForm()
 	if err != nil {

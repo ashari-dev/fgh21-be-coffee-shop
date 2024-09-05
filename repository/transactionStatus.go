@@ -47,3 +47,4 @@ func FindAllTransactionStatus() ([]models.TransactionStatus, error) {
 	}
 	return status, err
 }
+

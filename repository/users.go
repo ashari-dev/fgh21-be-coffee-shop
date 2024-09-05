@@ -138,16 +138,13 @@ func DeleteUserById(id int) (models.Users, error) {
 	return userDelete, nil
 }
 
-// CreateinsertUser inserts a new user into the database and returns the created user.
 func CreateinsertUser(user models.InsertUsers) (models.InsertUsers, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	// SQL query with matching RETURNING fields for the struct
 	sql := `INSERT INTO users (email, password, role_id) VALUES ($1, $2, $3) RETURNING id, email, role_id`
 	row := db.QueryRow(context.Background(), sql, user.Email, user.Password, user.RoleId)
 
-	// Correctly map returned fields to the struct
 	var createdUser models.InsertUsers
 	err := row.Scan(&createdUser.Id, &createdUser.Email, &createdUser.RoleId)
 	if err != nil {
@@ -161,7 +158,6 @@ func CreateinsertProfile(profile models.InsertProfile) (models.InsertProfile, er
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	// SQL statement with matching fields for InsertProfile struct
 	sql := `
 		INSERT INTO profile (full_name, phone_number, address, image, user_id)
 		VALUES ($1, $2, $3, $4, $5) 
@@ -169,7 +165,6 @@ func CreateinsertProfile(profile models.InsertProfile) (models.InsertProfile, er
 	`
 	row := db.QueryRow(context.Background(), sql, profile.FullName, profile.PhoneNumber, profile.Address, profile.Image, profile.UserId)
 
-	// Correctly map the returned fields to the struct
 	var createdProfile models.InsertProfile
 	err := row.Scan(&createdProfile.Id, &createdProfile.FullName, &createdProfile.PhoneNumber, &createdProfile.Address, &createdProfile.Image, &createdProfile.UserId)
 	if err != nil {

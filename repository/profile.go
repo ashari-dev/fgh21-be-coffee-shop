@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -206,4 +208,58 @@ func RemoveProfile(id int) error {
 	db.Exec(context.Background(), sql, id)
 
 	return nil
+}
+
+func DeleteProfileAndUser(id int) (models.Users, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	tx, err := db.Begin(context.Background())
+	if err != nil {
+		return models.Users{}, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(context.Background())
+		} else {
+			tx.Commit(context.Background())
+		}
+	}()
+
+	var userId int
+	var profileImage *string
+	err = tx.QueryRow(context.Background(), `
+		DELETE FROM profile 
+		WHERE id = $1 
+		RETURNING user_id, image`, id).Scan(&userId, &profileImage)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return models.Users{}, fmt.Errorf("profile not found")
+		}
+		return models.Users{}, fmt.Errorf("failed to delete profile or find associated user: %v", err)
+	}
+
+	var user models.Users
+	err = tx.QueryRow(context.Background(), `
+		DELETE FROM users 
+		WHERE id = $1 
+		RETURNING id, email, role_id`, userId).Scan(&user.Id, &user.Email, &user.RoleId)
+	if err != nil {
+		return models.Users{}, fmt.Errorf("failed to delete user: %v", err)
+	}
+
+	if profileImage != nil {
+
+		filePathParts := strings.Split(*profileImage, "8000")
+		if len(filePathParts) > 1 {
+			filePath := "." + filePathParts[1]
+			err = os.Remove(filePath)
+			if err != nil && !os.IsNotExist(err) {
+
+				fmt.Printf("Warning: failed to remove image file: %v\n", err)
+			}
+		}
+	}
+
+	return user, nil
 }

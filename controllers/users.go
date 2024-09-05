@@ -5,7 +5,6 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
-	"fmt"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -124,61 +123,56 @@ func DeleteUserById(c *gin.Context) {
 
 func CreateUserWithProfile(c *gin.Context) {
 	var input dtos.CreateUserProfileInput
+
 	if err := c.Bind(&input); err != nil {
 		lib.HandlerBadReq(c, "Invalid input data")
 		return
 	}
 
-	// Validate image upload
 	file, err := c.FormFile("profileImage")
 	if err != nil {
 		lib.HandlerBadReq(c, "Image upload failed")
 		return
 	}
 
-	// Validate file extension
 	allowedExtensions := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
 	fileExt := strings.ToLower(filepath.Ext(file.Filename))
 	if !allowedExtensions[fileExt] {
-		lib.HandlerBadReq(c, "Invalid file extension")
+		lib.HandlerBadReq(c, "Invalid file extension. Allowed: .jpg, .jpeg, .png")
 		return
 	}
 
-	// Generate new filename
 	newFileName := uuid.New().String() + fileExt
 	uploadDir := "./img/profile/"
 	fullFilePath := uploadDir + newFileName
 
-	// Save uploaded file
 	if err := c.SaveUploadedFile(file, fullFilePath); err != nil {
 		lib.HandlerBadReq(c, "Failed to upload image")
 		return
 	}
 
-	// Create User
+	encryptedPassword := lib.Encrypt(input.Password)
+
 	user, err := repository.CreateinsertUser(models.InsertUsers{
 		Email:    input.Email,
-		Password: input.Password,
+		Password: encryptedPassword,
 		RoleId:   input.RoleId,
 	})
 	if err != nil {
-		// Print the actual error for debugging
-		fmt.Println("Error creating user:", err)
 		lib.HandlerBadReq(c, "Failed to create user: "+err.Error())
 		return
 	}
 
-	// Create Profile
+	imageURL := "http://localhost:8000/img/profile/" + newFileName
+
 	profile, err := repository.CreateinsertProfile(models.InsertProfile{
 		FullName:    input.FullName,
 		PhoneNumber: &input.PhoneNumber,
 		Address:     &input.Address,
-		Image:       &fullFilePath,
-		UserId:      user.Id, // Ensure the UserId is correctly passed
+		Image:       &imageURL,
+		UserId:      user.Id,
 	})
 	if err != nil {
-		// Print the actual error for debugging
-		fmt.Println("Error creating profile:", err)
 		lib.HandlerBadReq(c, "Failed to create profile: "+err.Error())
 		return
 	}

@@ -22,6 +22,7 @@ type TransactionJoin struct {
 }
 
 type AllTransactionForAdmin struct {
+	Id          int    `json:"id"`
 	NoOrder     int    `json:"noOrder" db:"no_order"`
 	Quantity    int    `json:"quantity" db:"quantity"`
 	Price       int    `json:"price" db:"price"`

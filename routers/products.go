@@ -9,11 +9,11 @@ import (
 
 func ProductsRouters(r *gin.RouterGroup) {
 
-
 	r.GET("/", controllers.ListProductsWithPagination)
 	r.GET("/filter/", controllers.ListAllFilterProductsWithPagination)
 	r.GET("/filter/price", controllers.ListAllFilterProductsWithPrice)
 	r.GET("/our-product/", controllers.ListAllOurProductsWithPagination)
+	r.GET("/our-product/:id", controllers.ListIdOurProductsWithPagination)
 	r.POST("", middlewares.AuthMiddleware(), controllers.CreateProduct)
 	r.GET("/:id", controllers.ListProductById)
 	r.PATCH("/:id", controllers.UpdateProduct)
@@ -24,5 +24,6 @@ func ProductsRouters(r *gin.RouterGroup) {
 	r.GET("/variant/:id", controllers.ListProductVariantById)
 	r.GET("/categoryproducts/", controllers.ListAllCategoryProduct)
 	r.GET("/categoryproducts/:id", controllers.GetCategoryProductByCategoryId)
+	r.POST("/upload/img", controllers.UploadProductImage)
 
 }

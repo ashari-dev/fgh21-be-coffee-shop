@@ -5,15 +5,18 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 func GetALLProfiles(c *gin.Context) {
@@ -149,22 +152,29 @@ func UpdateProfile(c *gin.Context) {
 }
 
 func DeleteProfile(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
 
-	repository.RemoveProfile(id)
-	selectUser, err := repository.DeleteUserById(id)
-
+	profileId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		lib.HandlerNotfound(c, "Data not found")
+		lib.HandlerBadReq(c, "Invalid profile ID")
 		return
 	}
 
-	lib.HandlerOK(c, "Delete the product", selectUser, nil)
+	user, err := repository.DeleteProfileAndUser(profileId)
+	if err != nil {
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			lib.HandlerNotfound(c, "Profile not found")
+		} else {
+			lib.HandlerBadReq(c, "Failed to delete profile and user")
+		}
+		return
+	}
+
+	lib.HandlerOK(c, "Profile and User deleted successfully", user, nil)
 }
 
 func UploadProfileImage(c *gin.Context) {
 	id := c.GetInt("UserId")
-	fmt.Println(id)
 
 	maxFile := 500 * 1024
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))
@@ -199,6 +209,12 @@ func UploadProfileImage(c *gin.Context) {
 	}
 
 	tes := "http://localhost:8000/img/profile/" + newFile
+
+	delImgBefore, _ := repository.FindProfileById(id)
+	if delImgBefore.Image != nil {
+		fileDel := strings.Split(*delImgBefore.Image, "8000")[1]
+		os.Remove("." + fileDel)
+	}
 
 	profile, err := repository.UpdateProfileImage(models.Profile{Image: &tes}, id)
 	if err != nil {

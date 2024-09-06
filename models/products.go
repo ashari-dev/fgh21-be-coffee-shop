@@ -27,3 +27,12 @@ type JProducts struct {
 	Description string `json:"description"`
 	Price       int    `json:"price"`
 }
+
+type JPriceProducts struct {
+	Id          int    `json:"id"`
+	Image       string `json:"image"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Price       int    `json:"price"`
+	Name        string `json:"name"`
+}

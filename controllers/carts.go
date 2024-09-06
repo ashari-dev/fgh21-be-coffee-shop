@@ -57,21 +57,22 @@ func CreateOneCarts(ctx *gin.Context) {
 	lib.HandlerOK(ctx, "Add to Carts success", carts, nil)
 }
 
-func DeleteOneCarts(ctx *gin.Context) {
-	id := ctx.GetInt("id")
-	selectUser, err := repository.GetCartsByUserId(id)
+func DeleteCartsByUserId(ctx *gin.Context) {
+	id := ctx.GetInt("UserId")
+	// fmt.Println(id)
+	// selectUser, err := repository.GetCartsByUserId(id)
 
+	// if err != nil {
+	// 	lib.HandlerNotfound(ctx, "Carts not found")
+	// 	return
+	// }
+
+	err := repository.DeleteCarts(models.Carts{}, id)
+	fmt.Println(err)
 	if err != nil {
-		lib.HandlerNotfound(ctx, "Data not found")
+		lib.HandlerNotfound(ctx, "Delete Failed")
 		return
 	}
 
-	err = repository.DeleteCarts(models.Carts{}, id)
-
-	if err != nil {
-		lib.HandlerNotfound(ctx, "Data not found")
-		return
-	}
-
-	lib.HandlerOK(ctx, "Delete the product", selectUser, nil)
+	lib.HandlerOK(ctx, "Delete the product", id, nil)
 }

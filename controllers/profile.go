@@ -171,6 +171,7 @@ func UploadProfileImage(c *gin.Context) {
 
 	file, err := c.FormFile("profileImg")
 	if err != nil {
+		fmt.Println(err)
 		if err.Error() == "http: request body too large" {
 			lib.HandlerMaxFile(c, "file size too large, max capacity 500 kb")
 			return
@@ -178,6 +179,7 @@ func UploadProfileImage(c *gin.Context) {
 		lib.HandlerBadReq(c, "not file to upload")
 		return
 	}
+
 	if id == 0 {
 		lib.HandlerBadReq(c, "User not found")
 		return
@@ -211,6 +213,5 @@ func UploadProfileImage(c *gin.Context) {
 		lib.HandlerBadReq(c, "upload failed")
 		return
 	}
-
 	lib.HandlerOK(c, "Upload success", profile, nil)
 }

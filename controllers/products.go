@@ -7,9 +7,12 @@ import (
 	"RGT/konis/repository"
 	"fmt"
 	"log"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func CreateProduct(c *gin.Context) {
@@ -228,34 +231,61 @@ func ListAllFilterProductsWithPrice(c *gin.Context) {
 	lib.HandlerOK(c, "List Filter Products Price", products, nil)
 }
 
-
 func ListIdOurProductsWithPagination(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	products, err := repository.GetIdOurProductsWithPagination(id)
 	fmt.Println(err)
 	if err != nil {
-			lib.HandlerNotfound(c, "Products not found")
-			return
+		lib.HandlerNotfound(c, "Products not found")
+		return
 	}
-		
-		lib.HandlerOK(c, "List All Products", products, nil)
+
+	lib.HandlerOK(c, "List All Products", products, nil)
 }
 
 func UploadProductImage(c *gin.Context) {
+	productId, _ := strconv.Atoi(c.Param("id"))
+	maxFile := 500 * 1024
+
 	form, err := c.MultipartForm()
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err.Error())
+		lib.HandlerBadReq(c, "not file to upload")
 		return
 	}
-	files := form.File["upload[]"]
 
+	files := form.File["upload"]
+	fmt.Println(files)
+	respont := []models.ProductImage{}
 	for _, item := range files {
-		err := c.SaveUploadedFile(item, "./img/product/"+item.Filename)
-		if err != nil {
-			log.Println(err)
+		if item.Size > int64(maxFile) {
+			lib.HandlerMaxFile(c, "file size too large, max capacity 500 kb")
 			return
 		}
+		allowExt := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+		fileExt := strings.ToLower(filepath.Ext(item.Filename))
+		if !allowExt[fileExt] {
+			lib.HandlerBadReq(c, "extension file not validate")
+			return
+		}
+
+		file := uuid.New().String() + fileExt
+
+		dir := "./img/product/"
+		err := c.SaveUploadedFile(item, dir+file)
+		if err != nil {
+			lib.HandlerBadReq(c, "upload failed")
+			return
+		}
+
+		locationFile := "http://localhost:8000/img/product/" + file
+		fmt.Println(locationFile)
+		dataImage, _ := repository.UploadProductImage(models.ProductImage{
+			Image:     locationFile,
+			ProductId: productId,
+		})
+		respont = append(respont, dataImage)
 	}
 
-	lib.HandlerOK(c, "data upload", nil, nil)
+	lib.HandlerOK(c, "data upload", respont, nil)
 }

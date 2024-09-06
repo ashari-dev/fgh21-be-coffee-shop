@@ -24,6 +24,6 @@ func ProductsRouters(r *gin.RouterGroup) {
 	r.GET("/variant/:id", controllers.ListProductVariantById)
 	r.GET("/categoryproducts/", controllers.ListAllCategoryProduct)
 	r.GET("/categoryproducts/:id", controllers.GetCategoryProductByCategoryId)
-	r.POST("/upload/img", controllers.UploadProductImage)
+	r.POST("/upload/img/:id", controllers.UploadProductImage)
 
 }

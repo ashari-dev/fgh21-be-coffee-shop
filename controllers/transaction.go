@@ -136,7 +136,7 @@ func GetALLTransactions(c *gin.Context) {
 		page = 1
 	}
 	if limit < 1 {
-		limit = 3
+		limit = 10
 	}
 
 	transaction, count := repository.FindAllTransactions(search, page, limit)
@@ -200,21 +200,20 @@ func GetALLTransactionsByStatusId(c *gin.Context) {
 }
 
 func UpdateTransactionStatus(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	noOrder, _ := strconv.Atoi(c.Param("id"))
 	var form dtos.FormTransaction
 
 	err := c.Bind(&form)
-
 	if err != nil {
 		lib.HandlerBadReq(c, "Required to input data")
 		return
 	}
-
 	update, err := repository.EditTransactionStatus(models.Transaction{
 		TransactionStatusId: form.TransactionStatus,
-	}, id)
-
-	if err != nil {
+		}, noOrder)
+		
+		if err != nil {
+		fmt.Println(err)
 		lib.HandlerBadReq(c, "Required to input data")
 		return
 	}

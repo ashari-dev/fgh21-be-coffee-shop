@@ -129,10 +129,10 @@ func EditTransactionStatus(data models.Transaction, id int) (models.Transaction,
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	sql := `UPDATE transactions SET "transaction_status_id"=$1 WHERE id=$2 returning *`
+	sql := `UPDATE transactions SET "transaction_status_id"=$1 WHERE no_order=$2 returning id,transaction_status_id`
 
 	query := db.QueryRow(context.Background(), sql, data.TransactionStatusId ,id)
-
+	
 	var result models.Transaction
 	err := query.Scan(
 		&result.Id,

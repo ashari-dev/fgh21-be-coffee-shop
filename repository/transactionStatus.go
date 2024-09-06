@@ -41,10 +41,10 @@ func FindAllTransactionStatus() ([]models.TransactionStatus, error) {
 		return []models.TransactionStatus{}, err
 	}
 
-	status, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.TransactionStatus])
+	dataStatus, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.TransactionStatus])
 	if err != nil {
 		return []models.TransactionStatus{}, err
 	}
-	return status, err
+	return dataStatus, err
 }
 

@@ -7,9 +7,7 @@ import (
 )
 
 func TransactionStatusRouters(rg *gin.RouterGroup) {
-
 	rg.GET("/:id", controllers.GetTRansactionStatusById)
 	rg.GET("", controllers.GetALLTransactionStatus)
 	rg.PATCH("/update/:id",controllers.UpdateTransactionStatus)
-
 }

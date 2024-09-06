@@ -15,5 +15,6 @@ func TransactionRouters(rg *gin.RouterGroup) {
 	rg.POST("/:id", controllers.CreateTransactionDetails)
 	rg.GET("/status", controllers.GetALLTransactionsByStatusId)
 	rg.GET("/:id", controllers.GetTransactionDetailById)
+	rg.DELETE("/:id", controllers.DeleteTransaction)
 	rg.GET("/products/:id", controllers.GetTransactionProductById)
 }

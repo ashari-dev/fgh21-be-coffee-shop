@@ -45,10 +45,10 @@ func FindAllTransactions(search string, page int, limit int) ([]models.AllTransa
 		offset = (page - 1) * limit
 	}
 
-	sql := `SELECT transactions.no_order, transaction_details.quantity, products.price, products.title, transaction_status.name as order_status  FROM transactions
-		INNER JOIN transaction_details ON transaction_details.id = transactions.id
-		INNER JOIN products ON transaction_details.id = products.id
-		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
+	sql := `SELECT transactions.id, transactions.no_order, transaction_details.quantity, (products.price * transaction_details.quantity) AS total_price, products.title, transaction_status.name as order_status  FROM transactions
+		INNER JOIN transaction_details ON transaction_detail_id = transaction_details.id
+		INNER JOIN products ON transaction_details.product_id = products.id
+		INNER JOIN transaction_status ON transaction_status_id = transaction_status.id
 		WHERE products.title ilike '%' || $1 || '%'
 		limit $2 offset $3`
 
@@ -69,9 +69,9 @@ func TotalTransactions(search string) int {
 	db := lib.DB()
 	defer db.Close(context.Background())
 	inputSQL := `select count(no_order) as "total" FROM transactions
-		INNER JOIN transaction_details ON transaction_details.id = transactions.id
-		INNER JOIN products ON transaction_details.id = products.id
-		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
+		INNER JOIN transaction_details ON transaction_detail_id = transaction_details.id
+		INNER JOIN products ON transaction_details.product_id = products.id
+		INNER JOIN transaction_status ON transaction_status_id = transaction_status.id
 		WHERE products.title ilike '%' || $1 || '%'`
 	rows := db.QueryRow(context.Background(), inputSQL, search)
 	var result int
@@ -89,10 +89,10 @@ func FindTransactionsByStatusId(search int, page int, limit int) ([]models.AllTr
 		offset = (page - 1) * limit
 	}
 
-	sql := `SELECT transactions.no_order, transaction_details.quantity, products.price, products.title, transaction_status.name as order_status  FROM transactions
-		INNER JOIN transaction_details ON transaction_details.id = transactions.id
-		INNER JOIN products ON transaction_details.id = products.id
-		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
+	sql := `SELECT transactions.id, transactions.no_order, transaction_details.quantity, (products.price * transaction_details.quantity) AS total_price, products.title, transaction_status.name as order_status  FROM transactions
+		INNER JOIN transaction_details ON transaction_detail_id = transaction_details.id
+		INNER JOIN products ON transaction_details.product_id = products.id
+		INNER JOIN transaction_status ON transaction_status_id = transaction_status.id
 		WHERE transaction_status_id = $1
 		limit $2 offset $3`
 
@@ -113,9 +113,9 @@ func TotalTransactionsByStatusId(search int) int {
 	db := lib.DB()
 	defer db.Close(context.Background())
 	inputSQL := `select count(no_order) as "total" FROM transactions
-		INNER JOIN transaction_details ON transaction_details.id = transactions.id
-		INNER JOIN products ON transaction_details.id = products.id
-		INNER JOIN transaction_status ON transactions.transaction_status_id = transaction_status.id
+		INNER JOIN transaction_details ON transaction_detail_id = transaction_details.id
+		INNER JOIN products ON transaction_details.product_id = products.id
+		INNER JOIN transaction_status ON transaction_status_id = transaction_status.id
 		WHERE transaction_status_id = $1`
 	rows := db.QueryRow(context.Background(), inputSQL, search)
 	var result int
@@ -123,6 +123,47 @@ func TotalTransactionsByStatusId(search int) int {
 		&result,
 	)
 	return result
+}
+
+func FindOneTransactionById(id int) (models.AllTransactionForAdmin, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	inputSQL := `SELECT transactions.id, transactions.no_order, transaction_details.quantity, (products.price * transaction_details.quantity) AS total_price, products.title, transaction_status.name as order_status  FROM transactions
+		INNER JOIN transaction_details ON transaction_detail_id = transaction_details.id
+		INNER JOIN products ON transaction_details.product_id = products.id
+		INNER JOIN transaction_status ON transaction_status_id = transaction_status.id
+		WHERE transactions.id = $1`
+
+	row, _ := db.Query(context.Background(), inputSQL, id)
+
+	result, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.AllTransactionForAdmin])
+
+	if err != nil {
+		return models.AllTransactionForAdmin{}, err
+	}
+
+	return result, err
+}
+
+func DeleteTransaction(id int) (models.AllTransactionForAdmin, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	result, _ := FindOneTransactionById(id)
+
+	sql := `DELETE FROM transactions WHERE transactions.id=$1;`
+
+	query, err := db.Exec(context.Background(), sql, id)
+
+	if err != nil {
+		return models.AllTransactionForAdmin{}, err
+	}
+
+	if query.RowsAffected() == 0 {
+		return models.AllTransactionForAdmin{}, err
+  }
+ return result , err
 }
 
 func EditTransactionStatus(data models.Transaction, id int) (models.Transaction, error) {

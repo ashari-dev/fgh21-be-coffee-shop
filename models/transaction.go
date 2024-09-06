@@ -14,14 +14,15 @@ type Transaction struct {
 }
 
 type TransactionJoin struct {
-	NoOrder    int
-	OrderTypes string
-	Image string
-	Quantity   []int
-	Price      []int
+	NoOrder    int    `db:"no_order"`
+	OrderTypes string `db:"order_type"`
+	Image      string `db:"image"`
+	Quantity   []int  `db:"quantity"`
+	Price      []int  `db:"price"`
 }
 
 type AllTransactionForAdmin struct {
+	Id          int    `json:"id"`
 	NoOrder     int    `json:"noOrder" db:"no_order"`
 	Quantity    int    `json:"quantity" db:"quantity"`
 	Price       int    `json:"price" db:"price"`

@@ -116,10 +116,10 @@ func CreateTransaction(c *gin.Context) {
 		})
 	}
 	fmt.Println(err)
-	if err != nil {
-		lib.HandlerBadReq(c, "Invalid Data")
-		return
-	}
+	// if err != nil {
+	// 	lib.HandlerBadReq(c, "Invalid Data")
+	// 	return
+	// }
 
 	lib.HandlerOK(c, "transaction success", nil, nil)
 }
@@ -137,6 +137,7 @@ func GetALLTransactions(c *gin.Context) {
 	}
 	if limit < 1 {
 		limit = 10
+
 	}
 
 	transaction, count := repository.FindAllTransactions(search, page, limit)
@@ -174,7 +175,7 @@ func GetALLTransactionsByStatusId(c *gin.Context) {
 		page = 1
 	}
 	if limit < 1 {
-		limit = 3
+		limit = 5
 	}
 
 	transaction, count := repository.FindTransactionsByStatusId(searchId, page, limit)
@@ -197,6 +198,37 @@ func GetALLTransactionsByStatusId(c *gin.Context) {
 		Next:      &next,
 		Prev:      &prev,
 	})
+}
+
+func FIndTransactionById(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	result, err := repository.FindOneTransactionById(id)
+	if err != nil {
+		lib.HandlerBadReq(c, "Failed To Get Transaction")
+		return
+	}
+
+	if id == 0 {
+		lib.HandlerNotfound(c, "Data not found")
+		return
+	}
+
+	lib.HandlerOK(c, "transaction success", result, nil)
+}
+
+func DeleteTransaction(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	// result, err = repository.DeleteTransaction(id)
+	result, err := repository.DeleteTransaction(id)
+
+	if err != nil {
+		lib.HandlerNotfound(c, "Data not found")
+		return
+	}
+
+	lib.HandlerOK(c, "Success delete transaction", result, nil)
 }
 
 func UpdateTransactionStatus(c *gin.Context) {

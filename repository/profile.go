@@ -148,7 +148,7 @@ func CreateProfileJoinUser(data models.Profile) (models.Profile, error) {
 	return profile, err
 }
 
-func UpdateProfile(data models.Profile, id int) (dtos.ProfileJoinUser, error) {
+func UpdateProfile(data models.Profile, id int) (dtos.FormUpdateProfileJoinUser, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
@@ -156,25 +156,31 @@ func UpdateProfile(data models.Profile, id int) (dtos.ProfileJoinUser, error) {
 		UPDATE profile 
 		SET ("full_name", "phone_number", "address") = ($1, $2, $3)
 		WHERE user_id=$4
-		RETURNING
-		"id", "full_name","phone_number",
-		"address", "image"`
+		RETURNING *`
 
-	query := db.QueryRow(context.Background(), sql, data.FullName, data.PhoneNumber, data.Address, id)
+	query, err := db.Query(context.Background(), sql, data.FullName, data.PhoneNumber, data.Address, id)
 
-	var result dtos.ProfileJoinUser
-	err := query.Scan(
-		&result.Id,
-		&result.FullName,
-		&result.PhoneNumber,
-		&result.Address,
-		&result.Image,
-		// &result.RoleId,
-	)
-	fmt.Println(err)
+	// var result dtos.ProfileJoinUser
+	// err := query.Scan(
+	// 	&result.Id,
+	// 	&result.FullName,
+	// 	&result.PhoneNumber,
+	// 	&result.Address,
+	// 	// &result.Image,
+	// 	// &result.RoleId,
+	// )
+	// fmt.Println(err)
 
 	if err != nil {
-		return dtos.ProfileJoinUser{}, err
+		fmt.Println(err)
+		return dtos.FormUpdateProfileJoinUser{}, err
+	}
+
+	result, _ := pgx.CollectOneRow(query, pgx.RowToStructByPos[dtos.FormUpdateProfileJoinUser])
+
+	if err != nil {
+		fmt.Println(err)
+		return dtos.FormUpdateProfileJoinUser{}, err
 	}
 
 	return result, err

@@ -65,9 +65,9 @@ func CreateProfileJoinUser(c *gin.Context) {
 	}
 
 	user, err := repository.CreateUser(models.Users{
-		Email:    inputUser.Email,
-		Password: inputUser.Password,
-		RoleId:   inputUser.RoleId,
+		Email: inputUser.Email,
+		// Password: inputUser.Password,
+		RoleId: inputUser.RoleId,
 	})
 	if err != nil {
 		lib.HandlerBadReq(c, "data not verified")
@@ -78,8 +78,8 @@ func CreateProfileJoinUser(c *gin.Context) {
 		FullName:    inputUser.FullName,
 		PhoneNumber: &inputUser.PhoneNumber,
 		Address:     &inputUser.Address,
-		Image:       &inputUser.Image,
-		UserId:      user.Id,
+		// Image:       &inputUser.Image,
+		UserId: user.Id,
 	})
 	if err != nil {
 		lib.HandlerBadReq(c, "data not verified")
@@ -111,19 +111,42 @@ func UpdateProfile(c *gin.Context) {
 	if id == 0 {
 		id = c.GetInt("UserId")
 	}
-	form := dtos.ProfileJoinUser{}
+	form := dtos.FormUpdateProfileJoinUser{}
 
 	err := c.Bind(&form)
+
+	fmt.Println(form)
 
 	if err != nil {
 		lib.HandlerBadReq(c, "Required to input data")
 		return
 	}
 
-	if form.Password == nil {
-		emptyPassword := ""
-		form.Password = &emptyPassword
-	}
+	// maxFile := 500 * 1024
+	// c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))
+	// file, err := c.FormFile("profileImage")
+	// if err != nil {
+	// 	lib.HandlerBadReq(c, "Image upload failed")
+	// 	return
+	// }
+	// allowedExtensions := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	// fileExt := strings.ToLower(filepath.Ext(file.Filename))
+	// if !allowedExtensions[fileExt] {
+	// 	lib.HandlerBadReq(c, "Invalid file extension. Allowed: .jpg, .jpeg, .png")
+	// 	return
+	// }
+	// newFileName := uuid.New().String() + fileExt
+	// uploadDir := "./img/profile/"
+	// fullFilePath := uploadDir + newFileName
+	// if err := c.SaveUploadedFile(file, fullFilePath); err != nil {
+	// 	lib.HandlerBadReq(c, "Failed to upload image")
+	// 	return
+	// }
+	// imageURL := "http://localhost:8000/img/profile/" + newFileName
+	// if form.Password == nil {
+	// 	emptyPassword := ""
+	// 	form.Password = &emptyPassword
+	// }
 
 	user, err := repository.UpdateUserById(models.Users{
 		Email:    form.Email,
@@ -139,6 +162,8 @@ func UpdateProfile(c *gin.Context) {
 		FullName:    form.FullName,
 		PhoneNumber: &form.PhoneNumber,
 		Address:     &form.Address,
+		// RoleId, updateProfile.RoleId,
+		UserId: user.Id,
 	}, id)
 
 	if err != nil {
@@ -146,7 +171,7 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	updateProfile.Email = user.Email
+	// updateProfile.Email = user.Email
 
 	lib.HandlerOK(c, "Success update profile", updateProfile, nil)
 }
@@ -175,6 +200,58 @@ func DeleteProfile(c *gin.Context) {
 
 func UploadProfileImage(c *gin.Context) {
 	id := c.GetInt("UserId")
+
+	maxFile := 500 * 1024
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))
+
+	file, err := c.FormFile("profileImg")
+	if err != nil {
+		if err.Error() == "http: request body too large" {
+			lib.HandlerMaxFile(c, "file size too large, max capacity 500 kb")
+			return
+		}
+		lib.HandlerBadReq(c, "not file to upload")
+		return
+	}
+	if id == 0 {
+		lib.HandlerBadReq(c, "User not found")
+		return
+	}
+
+	allowExt := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	fileExt := strings.ToLower(filepath.Ext(file.Filename))
+	if !allowExt[fileExt] {
+		lib.HandlerBadReq(c, "extension file not validate")
+		return
+	}
+
+	newFile := uuid.New().String() + fileExt
+
+	uploadDir := "./img/profile/"
+	if err := c.SaveUploadedFile(file, uploadDir+newFile); err != nil {
+		lib.HandlerBadReq(c, "upload failed")
+		return
+	}
+
+	tes := "http://localhost:8000/img/profile/" + newFile
+
+	delImgBefore, _ := repository.FindProfileById(id)
+	if delImgBefore.Image != nil {
+		fileDel := strings.Split(*delImgBefore.Image, "8000")[1]
+		os.Remove("." + fileDel)
+	}
+
+	profile, err := repository.UpdateProfileImage(models.Profile{Image: &tes}, id)
+	if err != nil {
+		lib.HandlerBadReq(c, "upload failed")
+		return
+	}
+
+	lib.HandlerOK(c, "Upload success", profile, nil)
+}
+
+func UploadProfileImageForAdmin(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
 
 	maxFile := 500 * 1024
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, int64(maxFile))

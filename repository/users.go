@@ -4,7 +4,6 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -89,7 +88,7 @@ func CreateUser(data models.Users) (models.Users, error) {
 	}
 
 	user, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Users])
-	fmt.Println(user)
+	// fmt.Println(user)
 	if err != nil {
 		return models.Users{}, nil
 	}
@@ -101,12 +100,15 @@ func UpdateUserById(data models.Users, id int) (models.Users, error) {
 	db := lib.DB()
 	defer db.Close(context.Background())
 
-	data.Password = lib.Encrypt(data.Password)
+	if data.Password != "" {
+		data.Password = lib.Encrypt(data.Password)
+	}
 
 	sql := `
-		UPDATE users SET(email, password)=($1, $2) 
+		UPDATE users SET(email, password)=(COALESCE(NULLIF($1,''),"email"), COALESCE(NULLIF($2,''),"password")) 
 		WHERE id = $3 RETURNING *
 		`
+
 	row, err := db.Query(context.Background(), sql, data.Email, data.Password, id)
 
 	if err != nil {
@@ -114,7 +116,6 @@ func UpdateUserById(data models.Users, id int) (models.Users, error) {
 	}
 
 	user, err := pgx.CollectOneRow(row, pgx.RowToStructByPos[models.Users])
-	// fmt.Println(user)
 	if err != nil {
 		return models.Users{}, nil
 	}
@@ -135,4 +136,40 @@ func DeleteUserById(id int) (models.Users, error) {
 	db.Exec(context.Background(), sql, id)
 
 	return userDelete, nil
+}
+
+func CreateinsertUser(user models.InsertUsers) (models.InsertUsers, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `INSERT INTO users (email, password, role_id) VALUES ($1, $2, $3) RETURNING id, email, role_id`
+	row := db.QueryRow(context.Background(), sql, user.Email, user.Password, user.RoleId)
+
+	var createdUser models.InsertUsers
+	err := row.Scan(&createdUser.Id, &createdUser.Email, &createdUser.RoleId)
+	if err != nil {
+		return models.InsertUsers{}, err
+	}
+
+	return createdUser, nil
+}
+
+func CreateinsertProfile(profile models.InsertProfile) (models.InsertProfile, error) {
+	db := lib.DB()
+	defer db.Close(context.Background())
+
+	sql := `
+		INSERT INTO profile (full_name, phone_number, address, image, user_id)
+		VALUES ($1, $2, $3, $4, $5) 
+		RETURNING id, full_name, phone_number, address, image, user_id
+	`
+	row := db.QueryRow(context.Background(), sql, profile.FullName, profile.PhoneNumber, profile.Address, profile.Image, profile.UserId)
+
+	var createdProfile models.InsertProfile
+	err := row.Scan(&createdProfile.Id, &createdProfile.FullName, &createdProfile.PhoneNumber, &createdProfile.Address, &createdProfile.Image, &createdProfile.UserId)
+	if err != nil {
+		return models.InsertProfile{}, err
+	}
+
+	return createdProfile, nil
 }

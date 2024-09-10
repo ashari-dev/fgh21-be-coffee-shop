@@ -3,5 +3,6 @@ CREATE TABLE "products" (
     "title" VARCHAR(50),
     "description" TEXT,
     "price" INT,
+    "stock" INT,
     "user_id" INT REFERENCES "users"("id")
 )

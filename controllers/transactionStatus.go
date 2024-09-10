@@ -26,12 +26,12 @@ func GetTRansactionStatusById(c *gin.Context) {
 }
 
 func GetALLTransactionStatus(c *gin.Context) {
-	status, err := repository.FindAllTransactionStatus()
+	dataStatus, err := repository.FindAllTransactionStatus()
 
 	if err != nil {
 		lib.HandlerBadReq(c, "Failed to request")
 		return
 	}
 
-	lib.HandlerOK(c, "List All Category", status, nil)
+	lib.HandlerOK(c, "List All Category", dataStatus, nil)
 }

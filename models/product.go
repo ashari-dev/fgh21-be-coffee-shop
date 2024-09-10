@@ -13,7 +13,7 @@ type Product struct {
 	Title       string `json:"title" db:"title"`
 	Description string `json:"description" db:"description"`
 	Price       int    `json:"price" db:"price"`
-	UserId      int    `json:"user_id" db:"user_id"`
+	UserId      *int   `json:"user_id" db:"user_id"`
 }
 
 func FindAllProduct() []Product {

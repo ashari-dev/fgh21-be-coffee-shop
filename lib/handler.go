@@ -36,3 +36,9 @@ func HandlerBadReq(c *gin.Context, msg string) {
 	})
 }
 
+func HandlerMaxFile(c *gin.Context, msg string){
+	c.JSON(http.StatusRequestEntityTooLarge, Respont{
+		Success: false,
+		Message: msg,
+	})
+}

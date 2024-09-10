@@ -5,9 +5,12 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func GetAllUsers(c *gin.Context) {
@@ -116,4 +119,63 @@ func DeleteUserById(c *gin.Context) {
 		return
 	}
 	lib.HandlerOK(c, "Delete user success", data, nil)
+}
+
+func CreateUserWithProfile(c *gin.Context) {
+	var input dtos.CreateUserProfileInput
+
+	if err := c.Bind(&input); err != nil {
+		lib.HandlerBadReq(c, "Invalid input data")
+		return
+	}
+
+	file, err := c.FormFile("profileImage")
+	if err != nil {
+		lib.HandlerBadReq(c, "Image upload failed")
+		return
+	}
+
+	allowedExtensions := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	fileExt := strings.ToLower(filepath.Ext(file.Filename))
+	if !allowedExtensions[fileExt] {
+		lib.HandlerBadReq(c, "Invalid file extension. Allowed: .jpg, .jpeg, .png")
+		return
+	}
+
+	newFileName := uuid.New().String() + fileExt
+	uploadDir := "./img/profile/"
+	fullFilePath := uploadDir + newFileName
+
+	if err := c.SaveUploadedFile(file, fullFilePath); err != nil {
+		lib.HandlerBadReq(c, "Failed to upload image")
+		return
+	}
+
+	encryptedPassword := lib.Encrypt(input.Password)
+
+	user, err := repository.CreateinsertUser(models.InsertUsers{
+		Email:    input.Email,
+		Password: encryptedPassword,
+		RoleId:   input.RoleId,
+	})
+	if err != nil {
+		lib.HandlerBadReq(c, "Failed to create user: "+err.Error())
+		return
+	}
+
+	imageURL := "http://localhost:8000/img/profile/" + newFileName
+
+	profile, err := repository.CreateinsertProfile(models.InsertProfile{
+		FullName:    input.FullName,
+		PhoneNumber: &input.PhoneNumber,
+		Address:     &input.Address,
+		Image:       &imageURL,
+		UserId:      user.Id,
+	})
+	if err != nil {
+		lib.HandlerBadReq(c, "Failed to create profile: "+err.Error())
+		return
+	}
+
+	lib.HandlerOK(c, "User and Profile created successfully", profile, nil)
 }

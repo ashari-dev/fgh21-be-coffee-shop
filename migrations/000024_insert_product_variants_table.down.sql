@@ -1,0 +1,1 @@
+TRUNCATE table product_variants;

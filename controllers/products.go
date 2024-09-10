@@ -5,22 +5,18 @@ import (
 	"RGT/konis/lib"
 	"RGT/konis/models"
 	"RGT/konis/repository"
+	"fmt"
+	"log"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
-func ListAllProducts(c *gin.Context) {
-	products, err := repository.GetAllProducts(models.Products{})
-	if err != nil {
-		lib.HandlerNotfound(c, "Products not found")
-		return
-	}
-
-	lib.HandlerOK(c, "List All Products", products, nil)
-}
 func CreateProduct(c *gin.Context) {
-	userId := 1
+	userId := c.GetInt("UserId")
 	var form dtos.Products
 
 	err := c.Bind(&form)
@@ -34,6 +30,7 @@ func CreateProduct(c *gin.Context) {
 		Title:       form.Title,
 		Description: form.Description,
 		Price:       form.Price,
+		Stock:       form.Stock,
 		UserId:      &userId,
 	})
 
@@ -75,6 +72,7 @@ func UpdateProduct(c *gin.Context) {
 		Title:       form.Title,
 		Description: form.Description,
 		Price:       form.Price,
+		Stock:       form.Stock,
 	}, id)
 
 	if err != nil {
@@ -148,4 +146,146 @@ func GetCategoryProductByCategoryId(c *gin.Context) {
 	}
 
 	lib.HandlerOK(c, "Detail Category Product", category, nil)
+}
+
+func ListProductsWithPagination(c *gin.Context) {
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 3
+	}
+	products, err := repository.GetAllOurProductsWithPagination(page, limit)
+	fmt.Println(err)
+	if err != nil {
+		lib.HandlerNotfound(c, "Products not found")
+		return
+	}
+	log.Println(products)
+
+	lib.HandlerOK(c, "List All Products", products, nil)
+}
+
+func ListAllOurProductsWithPagination(c *gin.Context) {
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 100
+	}
+	products, err := repository.GetAllOurProductsWithPagination(page, limit)
+	fmt.Println(err)
+	if err != nil {
+		lib.HandlerNotfound(c, "Products not found")
+		return
+	}
+
+	lib.HandlerOK(c, "List All Products", products, nil)
+}
+
+func ListAllFilterProductsWithPagination(c *gin.Context) {
+	title := c.Query("title")
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 3
+	}
+	products, err := repository.GetAllProductsWithFilterPagination(title, page, limit)
+	fmt.Println(err)
+	if err != nil {
+		lib.HandlerNotfound(c, "Products not found")
+		return
+	}
+	log.Println(products)
+
+	lib.HandlerOK(c, "List Filter Products", products, nil)
+}
+
+func ListAllFilterProductsWithPrice(c *gin.Context) {
+	lowPrice, _ := strconv.Atoi(c.Query("lowPrice"))
+	highPrice, _ := strconv.Atoi(c.Query("highPrice"))
+	name := c.Query("name")
+	title := c.Query("title")
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 100
+	}
+	products, err := repository.GetAllProductsWithFilterPrice(lowPrice, highPrice, name, title, page, limit)
+	if err != nil {
+		lib.HandlerNotfound(c, "Products not found")
+		return
+	}
+	fmt.Println(products)
+
+	lib.HandlerOK(c, "List Filter Products Price", products, nil)
+}
+
+func ListIdOurProductsWithPagination(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	products, err := repository.GetIdOurProductsWithPagination(id)
+	fmt.Println(err)
+	if err != nil {
+		lib.HandlerNotfound(c, "Products not found")
+		return
+	}
+
+	lib.HandlerOK(c, "List All Products", products, nil)
+}
+
+func UploadProductImage(c *gin.Context) {
+	productId, _ := strconv.Atoi(c.Param("id"))
+	maxFile := 500 * 1024
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		fmt.Println(err.Error())
+		lib.HandlerBadReq(c, "not file to upload")
+		return
+	}
+
+	files := form.File["upload"]
+	fmt.Println(files)
+	respont := []models.ProductImage{}
+	for _, item := range files {
+		if item.Size > int64(maxFile) {
+			lib.HandlerMaxFile(c, "file size too large, max capacity 500 kb")
+			return
+		}
+		allowExt := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+		fileExt := strings.ToLower(filepath.Ext(item.Filename))
+		if !allowExt[fileExt] {
+			lib.HandlerBadReq(c, "extension file not validate")
+			return
+		}
+
+		file := uuid.New().String() + fileExt
+
+		dir := "./img/product/"
+		err := c.SaveUploadedFile(item, dir+file)
+		if err != nil {
+			lib.HandlerBadReq(c, "upload failed")
+			return
+		}
+
+		locationFile := "http://localhost:8000/img/product/" + file
+		fmt.Println(locationFile)
+		dataImage, _ := repository.UploadProductImage(models.ProductImage{
+			Image:     locationFile,
+			ProductId: productId,
+		})
+		respont = append(respont, dataImage)
+	}
+
+	lib.HandlerOK(c, "data upload", respont, nil)
 }

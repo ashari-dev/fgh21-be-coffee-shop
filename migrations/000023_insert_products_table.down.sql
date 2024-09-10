@@ -1,1 +1,1 @@
-TRUNCATE table products
+TRUNCATE table products;

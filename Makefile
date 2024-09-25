@@ -1,8 +1,8 @@
-host ?= 172.17.0.2
+host ?= 3.25.204.209
 port ?= 5432
 user ?= postgres
-pass ?= 1
-db ?= konis
+pass ?= 123
+db ?= konis_caffee
 
 migrate\:init:
 	PGPASSWORD=$(pass) psql -U$(user) -d postgres -h $(host) -p $(port) -c "create database $(db);"
